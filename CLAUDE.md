@@ -11,3 +11,4 @@ Leia [docs/contexto.md](docs/contexto.md) antes de qualquer tarefa. É a fonte �
 - Se uma informação não estiver em `docs/`, pergunte em vez de assumir.
 - Decisões novas e números oficiais são registrados em `docs/contexto.md` no mesmo commit da mudança.
 - Escreva em português.
+- Imagens e CSV da Neoenergia não estão no repositório nem no Drive do projeto. Vieram em um zip e contêm dados pessoais (fachadas, números de porta, vias públicas), então a LGPD se aplica. Nunca assuma que tem acesso aos dados. Para rodar ou escrever código que dependa deles, peça ao usuário o acesso local a uma pasta fora do Git. Nunca versione fotos ou CSV, e não publique amostras sem desfoque.

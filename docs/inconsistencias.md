@@ -11,8 +11,8 @@ Levantamento feito em 03/10/2026 comparando os 10 documentos em [fontes/](fontes
 | 3 | Meta de automação | Resolvido: 50% é piso, validado pela Neoenergia. Demais metas provisórias | contexto.md, Decisões |
 | 4 | Rotulagem e tabela de evidência | Resolvido por substituição: pertenciam ao desenho antigo. Piloto de anotação de caixas é o próximo passo do SR1 | contexto.md |
 | 5 | Volume e gatilho | Parcial: faixa 50 a 70 mil registrada. Unidade e gatilho pendentes com a Neoenergia | Pendências |
-| 6 | O "92%" | Pendente: conferir no CSV | Pendências |
-| 7 | Formato e tamanho da base | Parcial: números do SR1 registrados. Formato e coluna pendentes | contexto.md, Pendências |
+| 6 | O "92%" | Resolvido em 03/10/2026 contra a base: vale a definição da Ideação (92,0%); a do slide de 29/08 está errada (4,9%) | contexto.md, Dados |
+| 7 | Formato e tamanho da base | Resolvido em 03/10/2026: CSVs com `;` e dicionário xlsx, todos os números do SR1 batem | contexto.md, Dados |
 | 8 | Classes de I2 contra detector | Resolvido pelo item 1: I2 descartada. Arquitetura final em aberto até o SR2 | contexto.md |
 | 9 | Datas de entregáveis | Resolvido: vale o cronograma do Drive | contexto.md, Marcos |
 | 10 | Nome do João Pedro | Resolvido | contexto.md, Grupo |
@@ -21,6 +21,7 @@ Levantamento feito em 03/10/2026 comparando os 10 documentos em [fontes/](fontes
 | 13 | Perguntas ao cliente D1 a D5 | Pendente com a Neoenergia | Pendências |
 | 14 | Ordem das verificações | Resolvido pelo item 1 (ordem do desenho antigo não vale) | fontes/README.md |
 | 15 | Arquivos duplicados | Pendente: ação no Drive | Pendências |
+| 16 | Notion desatualizado desde 30/08 (status, fases após o SR1, tarefas) | Resolvido em 03/10/2026. Sobram 2 divergências pequenas | fontes/notion.md |
 
 Os itens abaixo continuam descritos como foram encontrados. Leia junto com a tabela acima.
 
@@ -137,8 +138,6 @@ A pasta Apresentações tem "Copy of GridVision SR1.pdf" e "Copy of GridVision_K
 |---|---|---|
 | 2 | Dizer se o teste de legibilidade dos dígitos em recortes foi feito e qual o resultado | Henrique |
 | 5 | Confirmar com a Neoenergia se o volume mensal é de leituras ou de imagens, se a faixa é 50 a 70 mil ou 70 mil, e se a foto só existe quando a leitura está fora da faixa esperada (BU) ou em toda visita (Kickoff) | Grupo, na próxima conversa com o cliente |
-| 6 | Conferir no CSV qual definição do "92%" está certa: registros cuja nota não exige foto que têm foto, ou fotos anexadas que são de notas que não exigem foto | João Pedro (fez a EDA) |
-| 7 | Confirmar se a base original veio em .xlsx e foi convertida para CSV, e se a coluna "Posicao do medidor lida" é a leitura | João Pedro |
 | 13 | Perguntas D1 a D5 da Ideação (critério formal de foto, amostra auditada, resolução original, percentual auditado hoje, LGPD) e as da BU (tempo médio de análise, tipos de medidor mais frequentes, precisão aceitável, o que fica sempre humano). A resposta "50% é válido" cobre só parte da pergunta de precisão aceitável | Grupo, com a Neoenergia |
 | 15 | Escolher a versão oficial do Kickoff e do SR1 e apagar as cópias em Apresentações ("Copy of ...") | Grupo |
 | Metas | Definir valor-alvo para localização, acerto exato da leitura e segurança, e validar com a Neoenergia | Grupo, antes do SR2 |

@@ -15,3 +15,4 @@ Resumos em Markdown dos documentos da pasta do Drive, feitos em 03/10/2026. São
 | [slides-29-08.md](slides-29-08.md) | Slides de 29/08 | Histórico |
 | [kickoff.md](kickoff.md) | Kickoff, 12/09 | Histórico (problema mudou no SR1). Contexto do cliente e premissas seguem úteis |
 | [links-uteis.md](links-uteis.md) | Links Úteis | Vigente |
+| [notion.md](notion.md) | Notion do grupo | Atualizado em 03/10/2026 |
