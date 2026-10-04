@@ -30,6 +30,8 @@ Documentos que exigem nome completo usam o nome completo. Nos demais, usar a for
 | SR1 | 03/10/2026 (realizado) |
 | SR2 (entrega final) | 05/12/2026 |
 
+Atendimentos do Grupo 4 (sábados, fonte: PDF de atendimentos na pasta Utilitários do Drive): 17/10 10:30 a 11:15; 24/10 9:45 a 10:30; 07/11 9:00 a 9:45; 14/11 12:15 a 13:00; 21/11 11:30 a 12:15; 28/11 10:30 a 11:15. SR2 em 05/12 com chegada às 9:00 e ordem por sorteio. Lista completa em [fontes/notion.md](fontes/notion.md).
+
 Cronograma completo: `Cronograma_CRISP_DM_Projeto_4.pdf` na pasta do Drive. É o cronograma oficial. As datas de entregáveis da Definição da Solução (05/09, 26/09, 24/10, 14/11, 21/11, 28/11) pertenciam ao desenho antigo e não valem mais.
 
 ## Links
@@ -38,6 +40,7 @@ Cronograma completo: `Cronograma_CRISP_DM_Projeto_4.pdf` na pasta do Drive. É o
 - [Notion](https://app.notion.com/p/GridVision-3c10a1e8539280048ea3ec14161c1709)
 - [Drive](https://drive.google.com/drive/folders/1s2D1-MM3H-wqDQ6Sd0mfykE-Dz6VTJ3J)
 - [Repositório](https://github.com/jplacet1/GridVision)
+- [Design system do GridVision](https://claude.ai/artifact/QE97oYdBevqSvzrTb9VWj5) (artefato do Claude; o Claude de qualquer integrante lê por esse link. Se não abrir, peça ao João Pedro para compartilhar)
 
 ## Dados (números da EDA apresentados no SR1)
 
@@ -70,6 +73,11 @@ Conferidos em 03/10/2026 contra o zip original (`Base de Dados Neoenergia PE.zip
 - **Divisão dos dados.** Treino, validação e teste divididos por medidor, não por linha (70/15/15 nos três lotes de maio). Lote de 03/07 reservado como teste temporal.
 - **Dados ficam fora do Git.** Imagens e CSV da Neoenergia contêm dados pessoais (LGPD) e não estão no repositório nem no Drive do projeto. Código que dependa deles precisa de uma pasta local fora do Git, indicada por quem tem os dados. Só código, listas de arquivos e resultados agregados entram no repositório.
 - **Teste de legibilidade dos dígitos (previsto para 19/09).** Em aberto. Se foi feito, foi pelo Henrique. O único resultado registrado é o baseline de 02/10.
+
+- **Identidade visual.** O GridVision tem design system (cores, tipografia, espaçamento, logos), feito em 03/10/2026 e guardado no artefato linkado em Links. Apresentações, plataforma e artefatos feitos com o Claude partem dele: ler o `README.md` do artefato antes de criar qualquer material visual. Direção: base neutra (a preferência do grupo nas apresentações) com o gradiente azul-verde da mark só como acento. O logotipo completo só funciona sobre fundo escuro ("GRID" é quase branco). Falta a versão para fundo claro, a tagline da capa é provisória e a escolha das fontes (Oxanium, IBM Plex Sans e Mono) é sugestão ainda não validada pelo grupo.
+
+- **Sem acesso direto à Neoenergia.** O grupo trabalha com o que a CESAR repassa. Perguntas e validações do cliente (volume, gatilho da foto, precisão aceitável, metas) vão pela CESAR, a começar pelo professor Erick, e a resposta pode não vir. O que não for respondido segue como suposição do grupo, registrada como não validada.
+- **Resposta padrão para "qual o próximo passo".** Sai de [proximo-passo.md](proximo-passo.md): data de hoje comparada com a fase do cronograma e com uma checklist ordenada, em formato fixo. Quem concluir um item marca como `feito` lá no mesmo commit.
 
 ## Pendências
 

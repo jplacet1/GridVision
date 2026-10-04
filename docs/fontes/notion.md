@@ -13,7 +13,11 @@ Fonte: workspace do grupo, página [GridVision](https://app.notion.com/p/GridVis
 
 ## Atendimentos com o docente
 
-29/08 9:45 a 10:30; 12/09 9:00; 19/09 12:15 a 13:00; 26/09 11:30 a 12:15; 03/10 9:00 (todos os grupos, sorteio); 17/10 10:30 a 11:15; 24/10 9:45 a 10:30.
+Fonte: `[Projeto 4] Cronograma de Atendimentos - Cronograma.pdf` (pasta Utilitários do Drive). Horários do Grupo 4, sábados:
+
+29/08 9:45 a 10:30; 12/09 chegada 9:00 (kick-off), 9:35 a 9:50; 19/09 12:15 a 13:00; 26/09 11:30 a 12:15; 03/10 SR1, chegada 9:30, ordem por sorteio; 17/10 10:30 a 11:15; 24/10 9:45 a 10:30; 07/11 9:00 a 9:45; 14/11 12:15 a 13:00; 21/11 11:30 a 12:15; 28/11 10:30 a 11:15; 05/12 SR2, chegada 9:00, ordem por sorteio.
+
+O Notion dizia 9:00 para o SR1; o PDF diz 9:30. Corrigido em 03/10/2026.
 
 ## Atualização feita em 03/10/2026
 
@@ -23,8 +27,14 @@ Antes, o Notion tinha parado de ser atualizado em 30/08. Foi corrigido:
 - **db_cronograma:** Data Understanding para Data Preparation, Kick-off, Modeling + avaliação inicial e SR1 passaram a Finalizada; Data Preparation e Data Preparation para Modeling ficaram Em andamento (falta anotar o conjunto piloto). Criadas as 8 fases de 04/10 a 05/12 (refinamento, Modeling, Evaluation, Deployment e SR2), iguais ao PDF do Drive.
 - **Gantt:** Business Understanding (15/08 a 21/08) e Data Understanding (22/08 a 28/08) com datas iguais ao PDF e status Concluído; item "Data Preparation" renomeado para "Data Understanding → Data Preparation" e Concluído; criadas as demais fases até o SR2.
 
+## Revisão de 03/10/2026 (tarde)
+
+- "Kanban do Kick-off" renomeado para "Kanban do Projeto". O banco do Gantt, antes "Nova fonte de dados", virou "Gantt do Projeto".
+- Página Cronograma: título "Kick-off" virou "Cronograma do projeto", a tabela passou a ir até o SR2 e Business Understanding foi corrigido para 15/08 a 21/08.
+- Página Pesquisas e Fontes preenchida com o que já temos.
+
 ## Divergências que continuam
 
-- A tabela do Kick-off na página Cronograma ainda mostra Business Understanding de 15/08 a 22/08 (o PDF e o banco dizem 21/08).
+- No Kanban, "Confirmar com a Neoenergia: volume, gatilho da foto e perguntas D1 a D5" e "Definir valor-alvo das métricas do SR1 e validar com a Neoenergia" estão Concluído, mas `proximo-passo.md` e `contexto.md` os mantêm pendentes (sem validação do cliente). Conferir com quem mexeu.
 - O card "Documentação - Data Understanding" segue Em andamento porque o documento do Drive está incompleto.
 - Os cards antigos têm responsáveis, mas só como IDs de usuário.
