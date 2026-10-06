@@ -41,7 +41,7 @@ Status: `feito`, `pendente`, `bloqueado` (depende de terceiros). Atualizar junto
 | # | Fase | Item | Responsável | Status |
 |---|---|---|---|---|
 | 1 | F1 | Analisar o feedback do SR1 e registrar em `contexto.md` | Grupo | pendente |
-| 2 | F1 | Dizer se o teste de legibilidade dos dígitos (19/09) foi feito e o resultado | Henrique | pendente |
+| 2 | F1 | Dizer se o teste de legibilidade dos dígitos (19/09) foi feito e o resultado. Confirmado em 05/10: é o baseline PaddleOCR de 02/10 (ver `contexto.md`) | Henrique | feito |
 | 3 | F1 | Piloto de anotação de caixas (medidor, ID, visor) em amostra de fotos | Grupo | pendente |
 | 4 | F1 | Planejar os próximos experimentos (OCR em recortes do visor, detector) | Grupo | pendente |
 | 5 | F1 | Enviar ao professor Erick (CESAR) as perguntas para a Neoenergia (volume em leituras ou imagens, gatilho da foto, precisão aceitável, o que fica sempre humano, D1 a D5). Sem acesso direto ao cliente: a CESAR intermedeia | Grupo | pendente |
