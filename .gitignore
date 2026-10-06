@@ -22,7 +22,8 @@ venv/
 .ipynb_checkpoints/
 
 # Ambiente local
-.claude/
+.claude/*
+!.claude/skills/
 *.code-workspace
 .vscode/
 .idea/

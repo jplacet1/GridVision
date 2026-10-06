@@ -2,6 +2,8 @@
 
 Fonte única de verdade do GridVision. Se algo mudar, atualize este arquivo no mesmo commit.
 
+Como usar este repositório como workspace (Claude Code, dados fora do Git, branches e PRs): [guia-do-grupo.md](guia-do-grupo.md).
+
 Os documentos do Drive estão resumidos em [fontes/](fontes/). Conflitos entre eles e o que ainda está pendente estão em [inconsistencias.md](inconsistencias.md). Em caso de divergência, vale este arquivo.
 
 ## Projeto
