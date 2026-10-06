@@ -62,7 +62,12 @@ Conferidos em 03/10/2026 contra o zip original (`Base de Dados Neoenergia PE.zip
 - 12 medidores aparecem em mais de um lote (conferido).
 - Nenhuma foto tem caixa ou texto anotado.
 - Os CSVs usam o texto "NA" no lugar de campo vazio. Ler com `keep_default_na=False`.
-- Baseline de 02/10/2026: PaddleOCR na foto inteira, sem recorte e sem treino, 100 fotos nítidas. Acerto de 42% no número do medidor (placa) e 20% na leitura (display).
+- Baseline de 02/10/2026: PaddleOCR (PP-OCRv5, `en`, CPU) na foto inteira, sem recorte e sem treino, em 100 fotos nítidas (seed 1, nitidez >= 100, sorteadas entre 765 elegíveis). Script em [../experiments/baseline_ocr/](../experiments/baseline_ocr/), reavaliado em 05/10/2026 a partir dos arquivos do Henrique, com resultado idêntico ao entregue:
+  - Leitura (display): 20% ignorando zeros à esquerda (o display mostra `042884`, o CSV tem `42884`); só 3% com igualdade estrita. 8% erram por exatamente 1 dígito.
+  - Número do medidor (placa): **42%** se o número aparece contido no texto concatenado; **38%** se algum texto é igual ao número. O 42% do SR1 é a métrica mais branda. Falta o grupo escolher qual é a oficial; até lá citar as duas.
+  - 16% das fotos nítidas não tiveram nenhum texto detectado.
+  - É o melhor caso (só fotos nítidas, um único OCR, sem recorte). Não testa foto desfocada ou escura.
+  - Fotos, amostra e saída bruta do baseline ficam fora do Git (LGPD).
 
 ## Decisões e definições
 
@@ -93,13 +98,13 @@ Duas disciplinas usam o Projeto 4 como objeto e podem originar decisões do proj
 Regras que valem para esses entregáveis:
 
 - Repositório de MLOps é público. Não pode ter imagem nem CSV do cliente, e o README não nomeia a Neoenergia (acordo entre a CESAR e a empresa). Dados e fotos ficam fora do Git, como já definido.
-- **Repositório de MLOps (decidido em 04/10/2026):** repositório novo e público, separado deste, sem citar o cliente e só com imagens sintéticas. Código em `C:\Users\joaop\triagem-medidor-bentoml` (fora do Git deste projeto). Serve o PaddleOCR 2.10 pré-treinado (foto inteira, sem treino) por BentoML. O script do baseline de 02/10 ainda não foi enviado pelo Henrique, então o serviço foi montado do zero e os números de 42% e 20% não foram reproduzidos nele.
+- **Repositório de MLOps (decidido em 04/10/2026):** repositório novo e público, separado deste, sem citar o cliente e só com imagens sintéticas. Código em `C:\Users\joaop\triagem-medidor-bentoml` (fora do Git deste projeto). Serve o PaddleOCR 2.10 pré-treinado (foto inteira, sem treino) por BentoML. O serviço foi montado do zero e os números do baseline não foram reproduzidos nele. O script do baseline chegou em 05/10/2026 (ver seção Dados). A atividade de MLOps passou a ser feita pelo Henrique (informado pelo João Pedro em 05/10/2026), então confirmar com ele o que vale desse serviço.
 
 Pendências e conflitos aparentes (não resolvidos, valem as decisões acima até o grupo decidir):
 
 - **Divisão dos dados.** O Lab 02 exige partição por lote, nunca aleatória por foto. A decisão de 03/10 divide por medidor (70/15/15 nos lotes de maio, lote de 03/07 como teste temporal). Falta checar se as duas regras são compatíveis para o Lab 02.
 - **Bloco específico do Lab 02 sem dono.** O enunciado lista os grupos Korvian, Luminus, VoltLens e Nortdata e não cita GridVision. O grupo não é a Nortdata e ainda não validou com o professor de Deep Learning qual bloco (K, L, V ou N) responder. Até lá, só a parte comum (0,80) está definida. Enunciado, guia e esqueleto foram lidos em 04/10/2026 (arquivos baixados do Classroom).
-- **Baseline de 02/10.** O script e os resultados completos do PaddleOCR ainda dependem do Henrique.
+- **Baseline de 02/10.** Script e resultados recebidos em 05/10/2026 (ver seção Dados). Falta definir qual métrica do número do medidor é oficial (42% contido ou 38% igual).
 - **Saída do serviço de MLOps.** O enunciado pede número do medidor, função, consumo e confiança. O problema oficial do SR1 é número do medidor e leitura. Falta alinhar o que o endpoint devolve.
 - **Visibilidade do repositório GridVision.** Este repositório cita a Neoenergia em `docs/`. Se for público, não pode ser o repositório entregue em MLOps. Visibilidade não verificada.
 - **Marco 2 de Deep Learning (29/10)** não consta na tabela de marcos do Projeto 4, que lista só Kick-off, SR1 e SR2.
