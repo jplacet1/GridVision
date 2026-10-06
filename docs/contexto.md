@@ -79,6 +79,29 @@ Conferidos em 03/10/2026 contra o zip original (`Base de Dados Neoenergia PE.zip
 - **Sem acesso direto à Neoenergia.** O grupo trabalha com o que a CESAR repassa. Perguntas e validações do cliente (volume, gatilho da foto, precisão aceitável, metas) vão pela CESAR, a começar pelo professor Erick, e a resposta pode não vir. O que não for respondido segue como suposição do grupo, registrada como não validada.
 - **Resposta padrão para "qual o próximo passo".** Sai de [proximo-passo.md](proximo-passo.md): data de hoje comparada com a fase do cronograma e com uma checklist ordenada, em formato fixo. Quem concluir um item marca como `feito` lá no mesmo commit.
 
+## Disciplinas ligadas ao projeto
+
+Duas disciplinas usam o Projeto 4 como objeto e podem originar decisões do projeto. Detalhes em [fontes/mlops.md](fontes/mlops.md) e [fontes/deep-learning.md](fontes/deep-learning.md), lidos do Classroom em 04/10/2026.
+
+| Disciplina | Entrega | Prazo | Liga com o projeto |
+|---|---|---|---|
+| MLOps (BD031) | AV1, entrega prática: serviço de inferência em BentoML (ou equivalente), repositório público no GitHub e apresentação | Repositório 06/10 23:59 (tag `sr1`); apresentação 07/10 às 19:00 | Servir a extração das fotos (endpoint recebe imagem e devolve número do medidor, função, consumo e confiança) |
+| Deep Learning (BD019) | Lab 02, arquitetura profunda, por grupo | 08/10 23:59 (Marco 2 da disciplina em 29/10) | Arquitetura de rede, rotulagem de pelo menos 300 fotos (50 com dupla rotulagem, kappa de Cohen) e primeiro bloco treinado |
+
+Regras que valem para esses entregáveis:
+
+- Repositório de MLOps é público. Não pode ter imagem nem CSV do cliente, e o README não nomeia a Neoenergia (acordo entre a CESAR e a empresa). Dados e fotos ficam fora do Git, como já definido.
+- **Repositório de MLOps (decidido em 04/10/2026):** repositório novo e público, separado deste, sem citar o cliente e só com imagens sintéticas. Código em `C:\Users\joaop\triagem-medidor-bentoml` (fora do Git deste projeto). Serve o PaddleOCR 2.10 pré-treinado (foto inteira, sem treino) por BentoML. O script do baseline de 02/10 ainda não foi enviado pelo Henrique, então o serviço foi montado do zero e os números de 42% e 20% não foram reproduzidos nele.
+
+Pendências e conflitos aparentes (não resolvidos, valem as decisões acima até o grupo decidir):
+
+- **Divisão dos dados.** O Lab 02 exige partição por lote, nunca aleatória por foto. A decisão de 03/10 divide por medidor (70/15/15 nos lotes de maio, lote de 03/07 como teste temporal). Falta checar se as duas regras são compatíveis para o Lab 02.
+- **Bloco específico do Lab 02 sem dono.** O enunciado lista os grupos Korvian, Luminus, VoltLens e Nortdata e não cita GridVision. O grupo não é a Nortdata e ainda não validou com o professor de Deep Learning qual bloco (K, L, V ou N) responder. Até lá, só a parte comum (0,80) está definida. Enunciado, guia e esqueleto foram lidos em 04/10/2026 (arquivos baixados do Classroom).
+- **Baseline de 02/10.** O script e os resultados completos do PaddleOCR ainda dependem do Henrique.
+- **Saída do serviço de MLOps.** O enunciado pede número do medidor, função, consumo e confiança. O problema oficial do SR1 é número do medidor e leitura. Falta alinhar o que o endpoint devolve.
+- **Visibilidade do repositório GridVision.** Este repositório cita a Neoenergia em `docs/`. Se for público, não pode ser o repositório entregue em MLOps. Visibilidade não verificada.
+- **Marco 2 de Deep Learning (29/10)** não consta na tabela de marcos do Projeto 4, que lista só Kick-off, SR1 e SR2.
+
 ## Pendências
 
 Ver [inconsistencias.md](inconsistencias.md), seção "Pendências".

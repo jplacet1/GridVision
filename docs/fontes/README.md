@@ -16,3 +16,5 @@ Resumos em Markdown dos documentos da pasta do Drive, feitos em 03/10/2026. São
 | [kickoff.md](kickoff.md) | Kickoff, 12/09 | Histórico (problema mudou no SR1). Contexto do cliente e premissas seguem úteis |
 | [links-uteis.md](links-uteis.md) | Links Úteis | Vigente |
 | [notion.md](notion.md) | Notion do grupo | Atualizado em 03/10/2026 |
+| [mlops.md](mlops.md) | Classroom de MLOps (BD031), 04/10 | Vigente. AV1 prática com o projeto como objeto |
+| [deep-learning.md](deep-learning.md) | Classroom de Deep Learning (BD019), 04/10 | Vigente. Lab 02 sem os anexos (guia e bloco do grupo) |
