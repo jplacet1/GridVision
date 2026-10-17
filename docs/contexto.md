@@ -19,7 +19,7 @@ Os documentos do Drive estão resumidos em [fontes/](fontes/). Conflitos entre e
   - O leiturista fotografa em toda visita, normalmente (não só quando a leitura está fora da faixa).
   - Cobrir 50% das leituras que chegam aos analistas já seria um bom avanço.
   - D1: não existe manual ou critério formal de foto válida por nota (nada foi recebido).
-  - D2: a amostra auditada é a própria base recebida (`Base de Dados Neoenergia PE.zip`). Número do medidor e leitura do CSV servem como rótulo de referência, com a ressalva da EDA: 14,2% das leituras têm 1 a 3 dígitos e 347 são zero.
+  - D2: a amostra auditada é a própria base recebida (`Base de Dados Neoenergia PE.zip`). Número do medidor e leitura do CSV servem como rótulo de referência, com a ressalva da EDA: 14,2% das leituras têm 1 a 3 dígitos e 347 são zero. Ressalva descoberta pelo João Pedro em 17/10/2026: fotos com o número do medidor ilegível também têm o número preenchido no CSV, ou seja, o número não é tirado da foto (provavelmente vem do cadastro). O CSV não diz o que está visível. Consequências: a anotação do piloto precisa marcar, por foto, se o número e a leitura estão legíveis, e só os legíveis viram exemplo de treino do OCR; o acerto do baseline (medido contra o CSV) pode estar subestimado; "ilegível" é uma saída do sistema e vai ao analista. Em aberto: se a leitura do CSV é a digitada pelo leiturista ou a corrigida pelo analista.
   - D3: a resolução original é a da base, 360 x 480 px. Não há versão maior.
   - D5: sim, há restrição de LGPD (dados reais). Confirma a regra de dados fora do Git.
   - Meta de 50%: significa 50% das 70 mil leituras mensais resolvidas sem analista (confirmado em 17/10/2026).
