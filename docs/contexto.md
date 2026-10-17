@@ -13,16 +13,16 @@ Os documentos do Drive estão resumidos em [fontes/](fontes/). Conflitos entre e
 - Parceiro: Neoenergia Pernambuco
 - Objetivo: diminuir o trabalho manual dos analistas da Neoenergia automatizando parte da leitura dos medidores a partir das fotos de campo
 - Problema técnico: extrair das fotos de medidores o número do medidor e a leitura. Se a leitura informada pelo leiturista vier junto com a foto, comparar as duas (confere ou diverge). Se não vier, devolver o valor lido ao analista. Casos incertos vão para revisão manual.
-- Volume atual: 50 mil a 70 mil leituras por mês (faixa do Google Site), a maioria manual, com equipe de seis pessoas. A Business Understanding fala em 70 mil imagens por mês. A unidade segue sem confirmação da Neoenergia; o entendimento do grupo está no item abaixo.
-- Entendimento do grupo sobre volume e D1 a D5, informado pelo João Pedro em 17/10/2026 com o que ele sabe. **Não são respostas da Neoenergia**: as perguntas seguem pendentes com o cliente (via professor Erick), e estes itens valem como suposição do grupo até lá:
-  - A Neoenergia recebe cerca de 4 milhões de fotos por mês. As que têm incoerência ou alerta vão para os analistas: **70 mil leituras por mês**. Todas as 70 mil são analisadas mensalmente, para a conta chegar correta ao cliente.
+- Volume atual: 50 mil a 70 mil leituras por mês (faixa do Google Site), a maioria manual, com equipe de seis pessoas. A Business Understanding fala em 70 mil imagens por mês. Esclarecido em 17/10/2026: são 70 mil leituras por mês (item abaixo).
+- Volume, gatilho da foto e D1 a D5, informados e confirmados pelo João Pedro em 17/10/2026 a partir do que o grupo sabe do processo (não houve nova consulta à Neoenergia):
+  - A Neoenergia tem cerca de 4 milhões de clientes no total. Só as leituras que dão alguma inconsistência ou disparam alerta do sistema vão para os analistas: **70 mil leituras por mês**. Os analistas verificam todas as 70 mil, para a conta chegar correta ao cliente.
   - O leiturista fotografa em toda visita, normalmente (não só quando a leitura está fora da faixa).
   - Cobrir 50% das leituras que chegam aos analistas já seria um bom avanço.
   - D1: não existe manual ou critério formal de foto válida por nota (nada foi recebido).
   - D2: a amostra auditada é a própria base recebida (`Base de Dados Neoenergia PE.zip`). Número do medidor e leitura do CSV servem como rótulo de referência, com a ressalva da EDA: 14,2% das leituras têm 1 a 3 dígitos e 347 são zero. Ressalva descoberta pelo João Pedro em 17/10/2026: fotos com o número do medidor ilegível também têm o número preenchido no CSV, ou seja, o número não é tirado da foto (provavelmente vem do cadastro). O CSV não diz o que está visível. Consequências: a anotação do piloto precisa marcar, por foto, se o número e a leitura estão legíveis, e só os legíveis viram exemplo de treino do OCR; o acerto do baseline (medido contra o CSV) pode estar subestimado; "ilegível" é uma saída do sistema e vai ao analista. Em aberto: se a leitura do CSV é a digitada pelo leiturista ou a corrigida pelo analista.
   - D3: a resolução original é a da base, 360 x 480 px. Não há versão maior.
   - D5: sim, há restrição de LGPD (dados reais). Confirma a regra de dados fora do Git.
-  - Meta de 50%: significa 50% das 70 mil leituras mensais resolvidas sem analista (entendimento do grupo em 17/10/2026).
+  - Meta de 50%: significa 50% das 70 mil leituras mensais resolvidas sem analista (17/10/2026).
   - Erro tolerado: nenhum nas leituras que o sistema resolve sozinho. Motivo: cobrança indevida gera dano de reputação e processos. Consequência para o projeto: o sistema só decide quando tiver certeza e manda o resto ao analista; a métrica de segurança (erro entre as leituras resolvidas automaticamente) precisa ficar em zero ou o mais perto possível, e a cobertura (percentual resolvido sem analista) é o que se tenta levar a 50% ou mais. Premissa do grupo em 17/10/2026, não validada por escrito com a Neoenergia.
 - Metodologia: CRISP-DM
 
