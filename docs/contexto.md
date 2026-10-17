@@ -22,6 +22,8 @@ Os documentos do Drive estão resumidos em [fontes/](fontes/). Conflitos entre e
   - D2: a amostra auditada é a própria base recebida (`Base de Dados Neoenergia PE.zip`). Número do medidor e leitura do CSV servem como rótulo de referência, com a ressalva da EDA: 14,2% das leituras têm 1 a 3 dígitos e 347 são zero.
   - D3: a resolução original é a da base, 360 x 480 px. Não há versão maior.
   - D5: sim, há restrição de LGPD (dados reais). Confirma a regra de dados fora do Git.
+  - Meta de 50%: significa 50% das 70 mil leituras mensais resolvidas sem analista (confirmado em 17/10/2026).
+  - Erro tolerado: nenhum nas leituras que o sistema resolve sozinho. Motivo: cobrança indevida gera dano de reputação e processos. Consequência para o projeto: o sistema só decide quando tiver certeza e manda o resto ao analista; a métrica de segurança (erro entre as leituras resolvidas automaticamente) precisa ficar em zero ou o mais perto possível, e a cobertura (percentual resolvido sem analista) é o que se tenta levar a 50% ou mais. Premissa do grupo em 17/10/2026, não validada por escrito com a Neoenergia.
 - Metodologia: CRISP-DM
 
 ## Grupo 4: GridVision
