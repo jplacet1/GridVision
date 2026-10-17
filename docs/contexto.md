@@ -13,8 +13,15 @@ Os documentos do Drive estão resumidos em [fontes/](fontes/). Conflitos entre e
 - Parceiro: Neoenergia Pernambuco
 - Objetivo: diminuir o trabalho manual dos analistas da Neoenergia automatizando parte da leitura dos medidores a partir das fotos de campo
 - Problema técnico: extrair das fotos de medidores o número do medidor e a leitura. Se a leitura informada pelo leiturista vier junto com a foto, comparar as duas (confere ou diverge). Se não vier, devolver o valor lido ao analista. Casos incertos vão para revisão manual.
-- Volume atual: 50 mil a 70 mil leituras por mês (faixa do Google Site), a maioria manual, com equipe de seis pessoas. A Business Understanding fala em 70 mil imagens por mês. A unidade (leitura ou imagem) está pendente.
-- Volume, esclarecido pelo João Pedro em 17/10/2026 (não validado por escrito com a Neoenergia): a Neoenergia recebe cerca de 4 milhões de fotos por mês. Só as que têm incoerência ou alerta vão para os analistas, e essas são de 50 a 70 mil por mês (estimativa, não número exato). O leiturista já fotografa normalmente. Segundo a Neoenergia, cobrir 50% já seria um bom avanço. Isso responde em parte a pergunta de volume (os 50 a 70 mil são o universo dos analistas, não o total de fotos), mas a unidade (leitura ou imagem) segue sem confirmação.
+- Volume atual: 50 mil a 70 mil leituras por mês (faixa do Google Site), a maioria manual, com equipe de seis pessoas. A Business Understanding fala em 70 mil imagens por mês. Valor confirmado em 17/10/2026: ver item abaixo.
+- Volume e respostas do cliente, informados pelo João Pedro em 17/10/2026 (substituem as pendências de volume e D1 a D5):
+  - A Neoenergia recebe cerca de 4 milhões de fotos por mês. As que têm incoerência ou alerta vão para os analistas: **70 mil leituras por mês**. Todas as 70 mil são analisadas mensalmente, para a conta chegar correta ao cliente.
+  - O leiturista fotografa em toda visita, normalmente (não só quando a leitura está fora da faixa).
+  - Cobrir 50% das leituras que chegam aos analistas já seria um bom avanço.
+  - D1: não existe manual ou critério formal de foto válida por nota (nada foi recebido).
+  - D2: a amostra auditada é a própria base recebida (`Base de Dados Neoenergia PE.zip`). Número do medidor e leitura do CSV servem como rótulo de referência, com a ressalva da EDA: 14,2% das leituras têm 1 a 3 dígitos e 347 são zero.
+  - D3: a resolução original é a da base, 360 x 480 px. Não há versão maior.
+  - D5: sim, há restrição de LGPD (dados reais). Confirma a regra de dados fora do Git.
 - Metodologia: CRISP-DM
 
 ## Grupo 4: GridVision

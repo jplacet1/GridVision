@@ -113,7 +113,7 @@ Resultado "Aprovado, Reprovado ou Revisão manual, com motivo" segue DEF e KO. O
 
 ### 13. Perguntas do cliente ainda sem resposta (D1 a D5, BU)
 
-Nenhum documento registra resposta do cliente para: critério formal de foto por nota (D1), amostra auditada (D2), resolução original (D3), percentual auditado hoje (D4), restrição de LGPD (D5). BU também lista em aberto o tempo médio atual, tipos de medidores mais frequentes, precisão aceitável e o que fica sempre humano. SR1 repete "qual taxa de acerto o cliente aceita".
+**D1 a D5 respondidos em 17/10/2026** (ver `contexto.md`, seção Projeto). Continuam em aberto as perguntas da BU: em aberto o tempo médio atual, tipos de medidores mais frequentes, precisão aceitável e o que fica sempre humano. SR1 repete "qual taxa de acerto o cliente aceita".
 
 ### 14. Detalhes de ordem das verificações
 
@@ -137,8 +137,7 @@ A pasta Apresentações tem "Copy of GridVision SR1.pdf" e "Copy of GridVision_K
 | Item | O que falta | Responsável sugerido |
 |---|---|---|
 | 2 | Dizer se o teste de legibilidade dos dígitos em recortes foi feito e qual o resultado | Henrique |
-| 5 | Confirmar com a Neoenergia se o volume mensal é de leituras ou de imagens, se a faixa é 50 a 70 mil ou 70 mil, e se a foto só existe quando a leitura está fora da faixa esperada (BU) ou em toda visita (Kickoff) | Grupo, na próxima conversa com o cliente |
-| 13 | Perguntas D1 a D5 da Ideação (critério formal de foto, amostra auditada, resolução original, percentual auditado hoje, LGPD) e as da BU (tempo médio de análise, tipos de medidor mais frequentes, precisão aceitável, o que fica sempre humano). A resposta "50% é válido" cobre só parte da pergunta de precisão aceitável | Grupo, com a Neoenergia |
+| 13 | Perguntas da BU (tempo médio de análise, tipos de medidor mais frequentes, precisão aceitável, o que fica sempre humano). D1 a D5, volume e gatilho da foto foram respondidos em 17/10/2026 | Grupo, com a Neoenergia |
 | 15 | Escolher a versão oficial do Kickoff e do SR1 e apagar as cópias em Apresentações ("Copy of ...") | Grupo |
 | Metas | Definir valor-alvo para localização, acerto exato da leitura e segurança, e validar com a Neoenergia | Grupo, antes do SR2 |
 | Data Understanding | Completar o documento do Drive (coluna de imagens vazia, EDA do SR1 fora dele) | João Pedro |
