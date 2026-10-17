@@ -64,6 +64,8 @@ Conferidos em 03/10/2026 contra o zip original (`Base de Dados Neoenergia PE.zip
 - 13.669 registros nos CSVs e 12.340 fotos JPG, em 4 lotes: 20, 21 e 22/05 e 03/07/2026 (conferido).
 - Todas as fotos têm 360 x 480 px e nenhuma tem EXIF.
 - 866 fotos (7,0%) sem registro no CSV. 296 registros sem foto onde a nota exige foto.
+- Fotos sem registro no CSV, conferido em 17/10/2026 só pelos nomes de arquivo: cada foto tem um código de 20 dígitos único (12.340 códigos, nenhum repetido entre lotes) e nenhuma das 866 órfãs tem outra foto do mesmo código no CSV, então a hipótese de "foto refeita" (`_000` ruim, `_001` aceita) não se confirma. O sufixo pesa: fotos `_000` ficam fora do CSV em 4,4% dos casos (515 de 11.817), `_001` em 64% (277 de 435), `_002` em 76% (38 de 50) e de `_003` a `_008` em 36 de 38. As órfãs se distribuem nos quatro lotes (208, 219, 242 e 197). O significado do sufixo é desconhecido.
+- Observação do João Pedro em 17/10/2026, sem contagem: há fotos sem medidor visível com leitura preenchida no CSV, e fotos com medidor ilegível que nem constam no CSV. Reforça que o CSV registra o informado, não o que aparece na foto.
 - 1.316 registros com mais de um medidor ("/") e 768 com letras no número do medidor.
 - O CSV traz número do medidor e leitura em 100% dos registros, mas 14,2% das leituras têm 1 a 3 dígitos e 347 são zero.
 - Amostra aleatória de 1.200 fotos: 31,8% abaixo do limiar de nitidez (variância do Laplaciano menor que 100), 2,1% subexpostas (brilho médio menor que 40), 2,0% com baixo contraste (desvio-padrão menor que 20).
