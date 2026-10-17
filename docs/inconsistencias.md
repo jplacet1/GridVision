@@ -113,7 +113,7 @@ Resultado "Aprovado, Reprovado ou Revisão manual, com motivo" segue DEF e KO. O
 
 ### 13. Perguntas do cliente ainda sem resposta (D1 a D5, BU)
 
-**D1 a D5 respondidos em 17/10/2026** (ver `contexto.md`, seção Projeto). Continuam em aberto as perguntas da BU: em aberto o tempo médio atual, tipos de medidores mais frequentes, precisão aceitável e o que fica sempre humano. SR1 repete "qual taxa de acerto o cliente aceita".
+Em 17/10/2026 o grupo registrou o seu entendimento sobre D1 a D5 (ver `contexto.md`, seção Projeto), mas nada foi confirmado pela Neoenergia. Também seguem em aberto as perguntas da BU: em aberto o tempo médio atual, tipos de medidores mais frequentes, precisão aceitável e o que fica sempre humano. SR1 repete "qual taxa de acerto o cliente aceita".
 
 ### 14. Detalhes de ordem das verificações
 
@@ -137,7 +137,7 @@ A pasta Apresentações tem "Copy of GridVision SR1.pdf" e "Copy of GridVision_K
 | Item | O que falta | Responsável sugerido |
 |---|---|---|
 | 2 | Dizer se o teste de legibilidade dos dígitos em recortes foi feito e qual o resultado | Henrique |
-| 13 | Perguntas da BU (tempo médio de análise, tipos de medidor mais frequentes, precisão aceitável, o que fica sempre humano). D1 a D5, volume e gatilho da foto foram respondidos em 17/10/2026 | Grupo, com a Neoenergia |
+| 13 | Perguntas da BU (tempo médio de análise, tipos de medidor mais frequentes, precisão aceitável, o que fica sempre humano). D1 a D5, volume e gatilho da foto têm entendimento do grupo (17/10/2026), sem confirmação do cliente | Grupo, com a Neoenergia |
 | 15 | Escolher a versão oficial do Kickoff e do SR1 e apagar as cópias em Apresentações ("Copy of ...") | Grupo |
 | Metas | Definir valor-alvo para localização, acerto exato da leitura e segurança, e validar com a Neoenergia | Grupo, antes do SR2 |
 | Data Understanding | Completar o documento do Drive (coluna de imagens vazia, EDA do SR1 fora dele) | João Pedro |

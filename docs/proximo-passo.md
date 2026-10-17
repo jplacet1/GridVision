@@ -44,7 +44,7 @@ Status: `feito`, `pendente`, `bloqueado` (depende de terceiros). Atualizar junto
 | 2 | F1 | Dizer se o teste de legibilidade dos dígitos (19/09) foi feito e o resultado. Confirmado em 05/10: é o baseline PaddleOCR de 02/10 (ver `contexto.md`) | Henrique | feito |
 | 3 | F1 | Piloto de anotação de caixas (medidor, ID, visor) em amostra de fotos | Grupo | pendente |
 | 4 | F1 | Planejar os próximos experimentos (OCR em recortes do visor, detector) | Grupo | pendente |
-| 5 | F1 | Enviar ao professor Erick (CESAR) as perguntas para a Neoenergia. Volume, gatilho da foto e D1 a D5 respondidos em 17/10 (ver `contexto.md`). Falta só precisão aceitável e o que fica sempre humano, que seguem para o item 11 | Grupo | feito |
+| 5 | F1 | Enviar ao professor Erick (CESAR) as perguntas para a Neoenergia. Em 17/10 o grupo registrou o seu entendimento sobre volume, gatilho da foto e D1 a D5 (ver `contexto.md`), mas as perguntas ainda não foram enviadas nem respondidas pela Neoenergia | Grupo | pendente |
 | 6 | F1 | Apagar as cópias "Copy of ..." em Apresentações e definir versão oficial do Kickoff e do SR1 | Grupo | pendente |
 | 7 | F1 | Completar o Data Understanding do Drive (coluna de imagens vazia, EDA do SR1) | João Pedro | pendente |
 | 8 | F2 | Rotular amostra suficiente para treino, validação e teste (divisão por medidor, 70/15/15) | Grupo | pendente |
