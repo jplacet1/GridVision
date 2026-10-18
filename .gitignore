@@ -29,3 +29,6 @@ venv/
 .idea/
 .DS_Store
 Thumbs.db
+
+# Listas de arquivos (só nomes, sem dados) podem ser versionadas
+!experiments/piloto_anotacao/*.csv
