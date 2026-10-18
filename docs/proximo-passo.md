@@ -47,8 +47,8 @@ Status: `feito`, `pendente`, `bloqueado` (depende de terceiros). Atualizar junto
 | 5 | F1 | Enviar ao professor Erick (CESAR) as perguntas para a Neoenergia. Volume, gatilho da foto e D1 a D5 esclarecidos pelo grupo em 17/10 (ver `contexto.md`). Erro tolerado definido como zero. Sobra só o que fica sempre com o analista, que segue no item 11 | Grupo | feito |
 | 6 | F1 | Apagar as cópias "Copy of ..." em Apresentações e definir versão oficial do Kickoff e do SR1 | Grupo | pendente |
 | 7 | F1 | Completar o Data Understanding do Drive (coluna de imagens vazia, EDA do SR1) | João Pedro | pendente |
-| 8 | F2 | Rotular amostra suficiente para treino, validação e teste (divisão por medidor, 70/15/15) | Grupo | pendente |
-| 9 | F2 | Treinar detector de medidor, ID e visor. v0 treinado em 18/10 com as 300 fotos do piloto (mAP50 0,917 na checagem); falta avaliar em validação e teste | João Pedro | em andamento |
+| 8 | F2 | Rotular amostra suficiente para treino, validação e teste (divisão por medidor, 70/15/15). Feito em 17 e 18/10: 300 fotos de treino (piloto) e 200 de validação + teste | João Pedro | feito |
+| 9 | F2 | Treinar detector de medidor, ID e visor. v0 treinado em 18/10 com as 300 fotos do piloto; mAP50 0,942 em validação + teste | João Pedro | feito |
 | 10 | F2 | Testar OCR nos recortes do visor e comparar com a referência (PaddleOCR 3.7 com foto ampliada 2x: 28% na leitura, 41% no número do medidor). Feito em 18/10: OCR pronto no recorte não supera (18 na leitura); próximo é reconhecedor próprio para o visor | João Pedro | feito |
 | 10a | F2 | Experimento de pré-processamento (ampliação e CLAHE) nas 100 fotos do baseline | João Pedro | feito |
 | 10b | F2 | Atualizar o cronograma com avanços, atrasos e cortes de escopo, para o atendimento de 24/10 | Grupo | pendente |
