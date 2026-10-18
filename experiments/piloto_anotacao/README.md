@@ -38,7 +38,8 @@ Divisão gerada em 17/10/2026 (seed 42): treino 6.544 fotos, validação 1.402, 
 - **visor:** onde aparece a leitura de consumo. No digital, o retângulo do display; no analógico, a janela dos roletes ou o conjunto dos ponteiros.
 - Caixa justa, encostando na borda do objeto, sem sobra grande.
 - Objeto cortado na foto: desenhe a caixa só na parte visível.
-- Mais de um medidor: desenhe as caixas de todos e marque "mais de um" na pergunta 2.
+- Mais de um medidor: desenhe as caixas de todos (medidor, placa e visor de cada um que aparecer) e marque "mais de um" na pergunta 2. Nas perguntas de legibilidade, responda "sim" só se todos forem legíveis; se algum não for, responda "não" e diga na observação qual (ex.: "o da direita está ilegível"). Se os visores forem de tipos diferentes, marque o do medidor maior ou mais central e anote na observação.
+- A caixa "placa" é a do identificador do medidor (o número de série que vai no CSV), esteja ele numa plaqueta ou impresso no corpo do medidor. Não inclua código de barras, especificações técnicas, marca ou datas.
 - Não tem medidor (fachada, poste, chão): nenhuma caixa, e responda "não" na pergunta 2.
 
 **Perguntas:**
