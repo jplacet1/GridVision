@@ -190,15 +190,20 @@ def extrair(caminho, informado=None):
     numero, conf_n = "", 0.0
     alvos = [_digitos(m) for m in (num_inf or "").split("/") if _digitos(m)]
     na_placa = _candidatos([t for t in textos if _dentro(t["centro"], placa)]) if placa is not None else []
+    # devolve o número que foi LIDO, não o texto informado (que pode trazer vários medidores "a/b/c")
     for d, c in na_placa:
         if d in alvos and c > conf_n:
-            numero, conf_n = num_inf, c
+            numero, conf_n = d, c
     if not numero:
         for t in textos:
             d = _digitos(t["texto"])
-            if any(a and len(a) >= MIN_DIGITOS_FORA_PLACA and a in d for a in alvos) and t["conf"] > conf_n:
-                numero, conf_n = num_inf, t["conf"]
-                partes.append("número achado fora da placa")
+            achado = next((a for a in alvos if len(a) >= MIN_DIGITOS_FORA_PLACA and a in d), None)
+            if achado and t["conf"] > conf_n:
+                numero, conf_n = achado, t["conf"]
+        if numero:
+            partes.append("número achado fora da placa")
+    if numero and len(alvos) > 1:
+        partes.append(f"conferido 1 de {len(alvos)} números informados")
     if not numero and na_placa:
         numero, conf_n = max(na_placa, key=lambda x: (len(x[0]), x[1]))
 
