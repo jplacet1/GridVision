@@ -105,6 +105,8 @@ Conferidos em 03/10/2026 contra o zip original (`Base de Dados Neoenergia PE.zip
 - **Documentar o ambiente de execução** dos experimentos junto dos resultados (pedido do professor). O hardware do cliente é desconhecido; por ora, abstrair.
 - **Interface gráfica é obrigatória.** O usuário final não é técnico e hoje usa planilha. Desktop ou web está em aberto: João Pedro citou TKinter com Docker em intranet ou subdomínio, Henrique prefere web (Streamlit), o professor sugeriu TTK Bootstrap ou PySimpleGUI como desktop mais apresentável. Decisão no atendimento de 24/10.
 - **Pauta de 24/10:** cronograma atualizado (avanços, atrasos e cortes de escopo) e proposta de arquitetura do front-end. O professor vai avaliar trabalho em paralelo (uma pessoa no front-end, o resto no modelo).
+- **Divisão dos dados gerada** (seed 42, regra de 03/10): treino 6.544 fotos, validação 1.402, teste 1.402, teste temporal 2.992 (lote de 03/07). Fotos fora do CSV usam o código do nome do arquivo como chave. Lista em [../experiments/piloto_anotacao/divisao_v1.csv](../experiments/piloto_anotacao/divisao_v1.csv).
+- **Piloto de anotação preparado:** 300 fotos do treino (150 nítidas, 110 borradas, 40 fora do CSV), 100 por integrante e 50 com dupla anotação. Caixas de medidor, placa e visor, mais legibilidade do número e da leitura, presença de medidor e tipo de visor. Kit em [../experiments/piloto_anotacao/](../experiments/piloto_anotacao/).
 - **SR2.** Espera-se uma infraestrutura mínima de testes, sem precisar ser robusta. Se o MVP funcional e a apresentação estiverem prontos antes da entrega, a disciplina é considerada entregue (nas notas do atendimento aparece "ACR", provável erro de fala ou transcrição; confirmar o termo).
 
 ## Disciplinas ligadas ao projeto
