@@ -42,7 +42,7 @@ Status: `feito`, `pendente`, `bloqueado` (depende de terceiros). Atualizar junto
 |---|---|---|---|---|
 | 1 | F1 | Analisar o feedback do SR1 e registrar em `contexto.md`. Professor gostou do SR1 no geral (17/10) | Grupo | feito |
 | 2 | F1 | Dizer se o teste de legibilidade dos dígitos (19/09) foi feito e o resultado. Confirmado em 05/10: é o baseline PaddleOCR de 02/10 (ver `contexto.md`) | Henrique | feito |
-| 3 | F1 | Piloto de anotação de caixas (medidor, ID, visor) em amostra de fotos | Grupo | pendente |
+| 3 | F1 | Piloto de anotação de caixas (medidor, ID, visor) em amostra de fotos. 300 fotos anotadas em 17/10 (ver `contexto.md`) | João Pedro | feito |
 | 4 | F1 | Planejar os próximos experimentos (OCR em recortes do visor, detector). Plano apresentado ao professor em 17/10: ampliação 2x em 300 fotos, curva de cobertura e segurança, piloto de anotação, detector com limiar de confiança (ver `contexto.md`) | Grupo | feito |
 | 5 | F1 | Enviar ao professor Erick (CESAR) as perguntas para a Neoenergia. Volume, gatilho da foto e D1 a D5 esclarecidos pelo grupo em 17/10 (ver `contexto.md`). Erro tolerado definido como zero. Sobra só o que fica sempre com o analista, que segue no item 11 | Grupo | feito |
 | 6 | F1 | Apagar as cópias "Copy of ..." em Apresentações e definir versão oficial do Kickoff e do SR1 | Grupo | pendente |
