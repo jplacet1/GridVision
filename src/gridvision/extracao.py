@@ -82,6 +82,14 @@ def _digitos(s):
     return re.sub(r"\D", "", s or "")
 
 
+def normalizar_leitura(s):
+    """Leitura no formato do CSV: sem zeros à esquerda (o display mostra 007237, o CSV traz 7237;
+    nenhuma das 13.669 leituras da base começa com 0, fora o próprio "0"). Não vale para o número
+    do medidor, em que o zero à esquerda faz parte do identificador (32 casos na base)."""
+    d = _digitos(s)
+    return d.lstrip("0") or ("0" if d else "")
+
+
 def _dentro(centro, caixa):
     if caixa is None:
         return False
@@ -174,6 +182,9 @@ def extrair(caminho, informado=None):
                 if funcao not in FUNCOES_LEITURA:
                     partes.append(f"display não mostra o consumo (função {', '.join(sorted(FUNCOES_LEITURA))})")
                     leitura, conf_l = "", 0.0
+            if leitura and leitura != normalizar_leitura(leitura):
+                partes.append(f"no visor: {leitura}")
+            leitura = normalizar_leitura(leitura)
 
     # 3b. número do medidor: na placa; fora dela só se longo e inteiro
     numero, conf_n = "", 0.0

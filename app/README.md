@@ -31,7 +31,8 @@ A extração vem de [src/gridvision/extracao.py](../src/gridvision/extracao.py),
 2. **PaddleOCR 3.7** na foto inteira ampliada 2x, guardando a posição de cada texto.
 3. **Fiscal:** a leitura só vale se estiver dentro da caixa do visor; o número do medidor, dentro da placa (ou em qualquer lugar, se tiver 6 dígitos ou mais).
 4. **Função do display:** o código da função (03 = consumo) aparece à esquerda da leitura e é separado dela. Se a função não for de consumo, a leitura não é aceita. Outros códigos: `GRIDVISION_FUNCOES_LEITURA="03,..."`.
-5. **Confiança:** a menor entre a do OCR na leitura e no número.
+5. **Leitura sem zeros à esquerda:** o display mostra 007237, o CSV traz 7237 (nenhuma leitura da base começa com 0). O valor lido sai no formato do CSV; o que o visor mostrava fica no motivo. O número do medidor não é alterado (o zero faz parte do identificador).
+6. **Confiança:** a menor entre a do OCR na leitura e no número.
 
 Se as bibliotecas ou os pesos do detector não estiverem na máquina, o app volta à extração simulada e avisa no topo da tela. Para forçar o modo simulado (só mexer na interface): `GRIDVISION_SIMULADO=1`.
 

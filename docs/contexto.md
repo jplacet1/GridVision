@@ -73,6 +73,7 @@ Conferidos em 03/10/2026 contra o zip original (`Base de Dados Neoenergia PE.zip
 - Entre registros cuja nota não exige foto, 92,0% têm foto anexada (611 registros). Entre os que exigem foto, 92,5% têm (3.943 registros, dos quais 296 sem foto). Este é o "92%" da Ideação; a versão do slide de 29/08 ("92% das fotos anexadas são de notas que não exigem foto") está errada (o valor real é 4,9%).
 - 12 medidores aparecem em mais de um lote (conferido).
 - Nenhuma foto tem caixa ou texto anotado.
+- Leituras do CSV nunca têm zero à esquerda (nenhuma das 13.669, fora o próprio "0" em 347), enquanto o display mostra (ex.: 007237). O número do medidor pode começar com 0 (32 de 15.318) e o zero faz parte dele. Conferido em 18/10/2026.
 - Os CSVs usam o texto "NA" no lugar de campo vazio. Ler com `keep_default_na=False`.
 - Baseline de 02/10/2026: PaddleOCR (PP-OCRv5, `en`, CPU) na foto inteira, sem recorte e sem treino, em 100 fotos nítidas (seed 1, nitidez >= 100, sorteadas entre 765 elegíveis). Script em [../experiments/baseline_ocr/](../experiments/baseline_ocr/), reavaliado em 05/10/2026 a partir dos arquivos do Henrique, com resultado idêntico ao entregue:
   - Leitura (display): 20% ignorando zeros à esquerda (o display mostra `042884`, o CSV tem `42884`); só 3% com igualdade estrita. 8% erram por exatamente 1 dígito.

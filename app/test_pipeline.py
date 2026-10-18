@@ -52,6 +52,13 @@ class TestFuncaoDoDisplay(unittest.TestCase):
         c = pl._modelo._leituras_do_visor(self.textos((10, "03007237")))
         self.assertIn(("007237", 0.99, "03"), c)
 
+    def test_leitura_sem_zeros_a_esquerda(self):
+        n = pl._modelo.normalizar_leitura
+        self.assertEqual(n("007237"), "7237")
+        self.assertEqual(n("000000"), "0")
+        self.assertEqual(n("42884"), "42884")
+        self.assertEqual(n(""), "")
+
     def test_leitura_curta_nao_e_cortada(self):
         c = pl._modelo._leituras_do_visor(self.textos((10, "042884")))
         self.assertEqual(c, [("042884", 0.99, None)])
