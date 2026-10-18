@@ -58,6 +58,7 @@ Status: `feito`, `pendente`, `bloqueado` (depende de terceiros). Atualizar junto
 | 10f | F2 | Decidir se o sistema confere só a leitura (número do cadastro) ou leitura e número (teto 56% contra 46%) | Grupo | pendente |
 | 10g | F2 | Acelerar o app: comparar PP-OCRv5 mobile com v6 medium e processar fotos em paralelo | João Pedro | pendente |
 | 10i | F2 | Classificador de legibilidade e status "Ilegível (certeza alta)" no app (limiar 0,20). Falta o grupo definir o destino das fotos excluídas | João Pedro | feito |
+| 10j | F2 | Conferir à mão os 10 "Confere" automáticos do lote_demo2 (prova do erro zero) | João Pedro | pendente |
 | 10h | F2 | Abrir e mesclar os PRs das branches `docs/guia-do-grupo` e `docs/baseline-ocr`; atualizar o Notion com o trabalho de 18/10 | João Pedro | pendente |
 | 11 | F2 | Definir valor-alvo de localização, acerto exato da leitura e segurança, e pedir validação à Neoenergia pelo professor Erick. Se a resposta não vier, seguir com o valor do grupo e registrar como não validado | Grupo | pendente |
 | 12 | F3 | Refinar modelos e analisar erros: reconhecedor próprio do visor (ajuste fino com recortes legíveis), comparar EasyOCR e Tesseract, melhorar a placa no detector | Grupo | pendente |
