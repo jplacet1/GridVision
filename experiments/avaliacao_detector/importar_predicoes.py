@@ -35,7 +35,7 @@ while True:
 
 feitas = sem = 0
 for t in tarefas:
-    nome = t.get("file_upload") or str(t["data"].get("image", ""))
+    nome = str(t["data"].get("image", "")) or t.get("file_upload") or ""
     m = re.search(r"(PSP_EXTRATLEITIMPL_\d+_\d+_\d{20}_\d{3}\.jpg)", nome)
     if not m or m.group(1) not in pred:
         sem += 1; continue
