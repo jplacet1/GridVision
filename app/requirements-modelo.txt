@@ -1,0 +1,7 @@
+# Interface + modelo real (detector v0 + PaddleOCR 3.7). Instale o PyTorch CPU antes:
+#   pip install torch torchvision --index-url https://download.pytorch.org/whl/cpu
+ttkbootstrap==1.10.1
+Pillow>=10
+ultralytics
+paddlepaddle==3.3.1
+paddleocr==3.7.0
