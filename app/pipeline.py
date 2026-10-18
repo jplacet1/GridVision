@@ -34,13 +34,17 @@ LIDO = "Lido"
 REVISAO = "Revisão manual"
 ILEGIVEL = "Ilegível"
 SEM_MEDIDOR = "Sem medidor"
-STATUS = [CONFERE, DIVERGE, LIDO, REVISAO, ILEGIVEL, SEM_MEDIDOR]
+ILEGIVEL_CERTO = "Ilegível (certeza alta)"
+STATUS = [CONFERE, DIVERGE, LIDO, REVISAO, ILEGIVEL, ILEGIVEL_CERTO, SEM_MEDIDOR]
 
 # Só "Confere" sai sem analista. "Lido" (sem leitura informada) volta ao analista com o valor lido.
 AUTOMATICOS = {CONFERE}
 # Fora da fila de revisão (decisão do grupo, 18/10/2026): sem medidor na foto não há o que revisar.
 # Continuam na tabela de resultados e na exportação, marcadas como excluídas.
-EXCLUIDOS = {SEM_MEDIDOR}
+# Ilegível com certeza alta (classificador de legibilidade abaixo do limiar, decisão de 18/10/2026)
+# também sai da fila; o destino (pedir nova foto?) ainda será definido pelo grupo.
+EXCLUIDOS = {SEM_MEDIDOR, ILEGIVEL_CERTO}
+DECISAO_EXCLUIDA = {SEM_MEDIDOR: "Excluída (sem medidor)", ILEGIVEL_CERTO: "Excluída (ilegível): pedir nova foto"}
 
 # Tipos de problema, para filtrar resultados e histórico. Uma foto pode ter mais de um.
 P_SEM_MEDIDOR = "Sem medidor"
@@ -53,12 +57,13 @@ P_DIVERGE = "Leitura diferente da informada"
 P_CONFIANCA = "Confiança baixa"
 P_BORRADA = "Foto borrada"
 P_SEM_INFORMADO = "Sem leitura informada"
-PROBLEMAS = [P_SEM_MEDIDOR, P_SEM_VISOR, P_SEM_PLACA, P_LEITURA, P_NUMERO, P_FUNCAO, P_DIVERGE,
+P_ILEGIVEL_CERTO = "Ilegível com certeza alta"
+PROBLEMAS = [P_SEM_MEDIDOR, P_ILEGIVEL_CERTO, P_SEM_VISOR, P_SEM_PLACA, P_LEITURA, P_NUMERO, P_FUNCAO, P_DIVERGE,
              P_CONFIANCA, P_BORRADA, P_SEM_INFORMADO]
 
 # Histórico das decisões do analista: arquivo local, fora do Git (tem nomes de fotos e leituras).
 HISTORICO = Path(os.environ.get("GRIDVISION_HISTORICO", Path.home() / "gridvision_dados" / "historico" / "historico.csv"))
-CAMPOS_HISTORICO = ["analisado_em", "lote", "arquivo", "caminho", "status", "problemas", "numero_lido", "leitura_lida",
+CAMPOS_HISTORICO = ["analisado_em", "lote", "arquivo", "caminho", "status", "problemas", "prob_legivel", "numero_lido", "leitura_lida",
                     "numero_informado", "leitura_informada", "decisao", "numero_final", "leitura_final",
                     "confianca", "nitidez", "motivo"]
 
@@ -70,6 +75,7 @@ class Extracao:
     leitura: str       # vazio se ilegível
     confianca: float   # 0 a 1
     detalhe: str = ""  # o que o modelo achou (caixas, fiscal); vai para o motivo
+    prob_legivel: float = -1.0  # chance de a leitura ser legível; -1 se não calculada
 
 
 @dataclass
@@ -90,6 +96,7 @@ class Resultado:
     problemas: str = ""        # tipos de problema separados por " | " (ver PROBLEMAS)
     lote: str = ""             # nome da pasta do lote
     analisado_em: str = ""     # data e hora da decisão do analista
+    prob_legivel: float = -1.0  # chance de a leitura ser legível; -1 se não calculada
 
     @property
     def lista_problemas(self):
@@ -153,7 +160,7 @@ def conjuntos_do_lote(fotos):
 def extrair(caminho, informado=None, nitida=True):
     if MODELO_REAL:
         r = _modelo.extrair(caminho, informado)
-        return Extracao(r.tem_medidor, r.numero, r.leitura, r.confianca, r.detalhe)
+        return Extracao(r.tem_medidor, r.numero, r.leitura, r.confianca, r.detalhe, r.prob_legivel)
     return _extrair_simulado(caminho, informado, nitida)
 
 
@@ -178,10 +185,24 @@ def mesma_leitura(a, b):
     return a.lstrip("0") == b.lstrip("0")
 
 
+def limiar_ilegivel():
+    return _modelo.limiar_ilegivel() if _modelo is not None else 0.0
+
+
 def decidir(ext, informado):
-    """Devolve (status, motivo). O sistema só decide sozinho quando tem certeza; o resto vai ao analista."""
+    """Devolve (status, motivo). O sistema só decide sozinho quando tem certeza; o resto vai ao analista.
+    Foto com chance de legível abaixo do limiar sai da fila como "Ilegível (certeza alta)", a não ser que
+    a leitura tenha conferido (aí a foto era legível de fato)."""
     if not ext.tem_medidor:
         return SEM_MEDIDOR, "nenhum medidor encontrado na foto"
+    status, motivo = _decidir_leitura(ext, informado)
+    lim = limiar_ilegivel()
+    if status != CONFERE and 0 <= ext.prob_legivel < lim:
+        return ILEGIVEL_CERTO, f"chance de a leitura ser legível {ext.prob_legivel:.0%}, abaixo de {lim:.0%}"
+    return status, motivo
+
+
+def _decidir_leitura(ext, informado):
     if not ext.leitura or not ext.numero:
         return ILEGIVEL, "número ou leitura não legível na foto"
     if ext.confianca < LIMIAR_CONFIANCA:
@@ -198,6 +219,8 @@ def classificar_problemas(ext, status, nit, informado):
     p = []
     if status == SEM_MEDIDOR:
         return [P_SEM_MEDIDOR]
+    if status == ILEGIVEL_CERTO:
+        p.append(P_ILEGIVEL_CERTO)
     det = ext.detalhe or ""
     if "sem visor" in det: p.append(P_SEM_VISOR)
     if "sem placa" in det: p.append(P_SEM_PLACA)
@@ -224,7 +247,7 @@ def processar(caminho, informado=None):
     return Resultado(caminho.name, str(caminho), nit, ext.numero, ext.leitura, ext.confianca,
                      num_inf, leit_inf, status, motivo,
                      problemas=" | ".join(classificar_problemas(ext, status, nit, informado)),
-                     lote=caminho.parent.name)
+                     lote=caminho.parent.name, prob_legivel=ext.prob_legivel)
 
 
 def registrar_decisao(r):
@@ -258,7 +281,8 @@ def carregar_historico():
         saida.append(Resultado(l["arquivo"], l["caminho"], float(l["nitidez"] or 0), l["numero_lido"],
                                l["leitura_lida"], float(l["confianca"] or 0), l["numero_informado"],
                                l["leitura_informada"], l["status"], l["motivo"], l["decisao"],
-                               l["numero_final"], l["leitura_final"], l["problemas"], l["lote"], l["analisado_em"]))
+                               l["numero_final"], l["leitura_final"], l["problemas"], l["lote"], l["analisado_em"],
+                               float(l.get("prob_legivel") or -1)))
     return saida
 
 
@@ -271,7 +295,7 @@ def exportar(resultados, destino):
             linha = asdict(r)
             linha.pop("caminho")
             if r.excluido and not r.decisao:
-                linha["decisao"] = "Excluída (sem medidor)"
+                linha["decisao"] = DECISAO_EXCLUIDA.get(r.status, "Excluída")
             linha["confianca"] = f"{r.confianca:.3f}"
             linha["nitidez"] = f"{r.nitidez:.1f}"
             w.writerow(linha)

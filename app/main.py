@@ -42,7 +42,7 @@ TEMA = ThemeDefinition(name="gridvision", themetype="dark", colors={
 })
 # Cor de cada status na tabela e nos cartões (sempre junto da palavra, nunca só a cor)
 COR_STATUS = {pl.CONFERE: "ok", pl.DIVERGE: "danger", pl.LIDO: "action", pl.REVISAO: "warn",
-              pl.ILEGIVEL: "warn", pl.SEM_MEDIDOR: "ink-muted"}
+              pl.ILEGIVEL: "warn", pl.ILEGIVEL_CERTO: "ink-muted", pl.SEM_MEDIDOR: "ink-muted"}
 ETAPAS = ["Lote", "Processamento", "Resultados", "Revisão", "Exportação"]
 
 # Situação de cada foto no lote
@@ -217,7 +217,8 @@ class App(ttk.Window):
     def _valores(r):
         return (r.arquivo, situacao(r), r.status, ", ".join(r.lista_problemas) or "-",
                 r.numero_final or r.numero_lido or "-", r.leitura_final or r.leitura_lida or "-",
-                r.leitura_informada or "-", f"{r.confianca:.2f}", r.decisao or "-", r.motivo)
+                r.leitura_informada or "-", f"{r.confianca:.2f}",
+                f"{r.prob_legivel:.0%}" if r.prob_legivel >= 0 else "-", r.decisao or "-", r.motivo)
 
     # ================= 1. Lote =================
     def _tela_lote(self, t):
@@ -312,7 +313,7 @@ class App(ttk.Window):
         self._cartoes(self.cartoes_proc, [("Processadas", str(n), "ink"),
                                           ("Confere automático", str(cont[AUTOMATICA]), "ok"),
                                           ("Pendentes", str(cont[PENDENTE]), "warn"),
-                                          ("Excluídas (sem medidor)", str(cont[EXCLUIDA]), "ink-muted"),
+                                          ("Excluídas (sem medidor ou ilegível)", str(cont[EXCLUIDA]), "ink-muted"),
                                           ("Revisadas", str(cont[REVISADA]), "action")])
 
     def iniciar(self):
@@ -390,8 +391,8 @@ class App(ttk.Window):
     # ================= 3. Resultados =================
     def _tela_resultados(self, t):
         self.titulo(t, "Resultados", "O que já está resolvido: \"Confere\" automático (entra enquanto o lote "
-                                     "processa), fotos revisadas pelo analista e fotos excluídas por não terem "
-                                     "medidor. Duplo clique abre a foto para revisar ou corrigir.")
+                                     "processa), fotos revisadas pelo analista e fotos excluídas (sem medidor ou "
+                                     "ilegíveis com certeza alta). Duplo clique abre a foto para revisar ou corrigir.")
         self.cartoes_res = ttk.Frame(t)
         self.cartoes_res.pack(fill=X, pady=(0, 12))
         barra = ttk.Frame(t)
@@ -402,10 +403,10 @@ class App(ttk.Window):
         self.r_prob = self._combo(barra, ["Todos"] + pl.PROBLEMAS, 28, self._preencher_resultados)
         self.res_tabela = self._tabela(
             t, ("arquivo", "situacao", "status", "problemas", "numero", "leitura", "informado", "confianca",
-                "decisao", "motivo"),
+                "legivel", "decisao", "motivo"),
             ("Foto", "Situação", "Status", "Problemas", "Nº", "Leitura", "Leitura informada", "Confiança",
-             "Decisão", "Motivo"),
-            (230, 90, 110, 200, 100, 80, 110, 70, 90, 260), "motivo")
+             "Legível", "Decisão", "Motivo"),
+            (230, 90, 140, 200, 100, 80, 110, 70, 60, 90, 240), "motivo")
         self.res_tabela.bind("<Double-1>", lambda e: self._abrir_da_tabela(self.res_tabela, "Resultados"))
         self.res_vazio = ttk.Label(t, text="", foreground=COR["ink-muted"])
 
@@ -416,7 +417,7 @@ class App(ttk.Window):
             ("Processadas", f"{n}/{self.total_lote}" if self.total_lote else "0", "ink"),
             ("Confere automático", f"{cont[AUTOMATICA]}  ({cont[AUTOMATICA] / n:.0%})" if n else "0", "ok"),
             ("Revisadas", str(cont[REVISADA]), "action"),
-            ("Excluídas (sem medidor)", str(cont[EXCLUIDA]), "ink-muted"),
+            ("Excluídas (sem medidor ou ilegível)", str(cont[EXCLUIDA]), "ink-muted"),
             ("Pendentes de revisão", str(cont[PENDENTE]), "warn" if cont[PENDENTE] else "ok")])
         sit, prob = self.r_sit.get(), self.r_prob.get()
         tv = self.res_tabela
@@ -497,7 +498,7 @@ class App(ttk.Window):
         self.v_num_inf, self.v_leit_inf, self.v_conf = tk.StringVar(), tk.StringVar(), tk.StringVar()
         linhas = [("Nº do medidor", self.v_numero, True), ("Leitura", self.v_leitura, True),
                   ("Nº informado", self.v_num_inf, False), ("Leitura informada", self.v_leit_inf, False),
-                  ("Confiança e nitidez", self.v_conf, False)]
+                  ("Confiança · nitidez · legível", self.v_conf, False)]
         for i, (rot, var, editavel) in enumerate(linhas):
             ttk.Label(form, text=rot.upper(), font=(self.f_sans, 9, "bold"),
                       foreground=COR["ink-muted"]).grid(row=i, column=0, sticky=W, pady=5, padx=(0, 16))
@@ -598,7 +599,8 @@ class App(ttk.Window):
         self.v_leitura.set(r.leitura_final or r.leitura_lida)
         self.v_num_inf.set(r.numero_informado or "-")
         self.v_leit_inf.set(r.leitura_informada or "-")
-        self.v_conf.set(f"{r.confianca:.2f}  ·  nitidez {r.nitidez:.0f}")
+        leg = f"  ·  legível {r.prob_legivel:.0%}" if r.prob_legivel >= 0 else ""
+        self.v_conf.set(f"{r.confianca:.2f}  ·  nitidez {r.nitidez:.0f}{leg}")
         try:
             img = Image.open(r.caminho)
             img.thumbnail((400, 540))
@@ -680,10 +682,10 @@ class App(ttk.Window):
                    command=lambda: self.exp_tabela.selection_remove(self.exp_tabela.selection())).pack(side=LEFT)
         self.exp_tabela = self._tabela(
             t, ("arquivo", "situacao", "status", "problemas", "numero", "leitura", "informado", "confianca",
-                "decisao", "motivo"),
+                "legivel", "decisao", "motivo"),
             ("Foto", "Situação", "Status", "Problemas", "Nº", "Leitura", "Leitura informada", "Confiança",
-             "Decisão", "Motivo"),
-            (230, 90, 110, 200, 100, 80, 110, 70, 90, 260), "motivo", selecao="extended")
+             "Legível", "Decisão", "Motivo"),
+            (230, 90, 140, 200, 100, 80, 110, 70, 60, 90, 240), "motivo", selecao="extended")
         self.exp_tabela.bind("<<TreeviewSelect>>", lambda e: self._contar_exportacao())
 
     def _filtrados_exportacao(self):

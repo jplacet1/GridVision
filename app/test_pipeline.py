@@ -37,6 +37,29 @@ class TestDecidir(unittest.TestCase):
         self.assertFalse(r.pendente)
 
 
+@unittest.skipIf(pl._modelo is None, "módulo do modelo indisponível")
+class TestCertezaDeIlegivel(unittest.TestCase):
+    def ext(self, prob, leitura="", numero=""):
+        return pl.Extracao(True, numero, leitura, 0.95 if leitura and numero else 0.0, "", prob)
+
+    def test_limiar_escolhido(self):
+        self.assertAlmostEqual(pl.limiar_ilegivel(), 0.20)
+
+    def test_chance_baixa_sai_da_fila(self):
+        st = pl.decidir(self.ext(0.05), ("A1", "10"))[0]
+        self.assertEqual(st, pl.ILEGIVEL_CERTO)
+        self.assertIn(st, pl.EXCLUIDOS)
+
+    def test_chance_alta_vai_ao_analista(self):
+        self.assertEqual(pl.decidir(self.ext(0.60), ("A1", "10"))[0], pl.ILEGIVEL)
+
+    def test_confere_vence_a_chance_baixa(self):
+        self.assertEqual(pl.decidir(self.ext(0.05, "10", "A1"), ("A1", "10"))[0], pl.CONFERE)
+
+    def test_sem_classificador_nao_muda_nada(self):
+        self.assertEqual(pl.decidir(self.ext(-1.0), ("A1", "10"))[0], pl.ILEGIVEL)
+
+
 class TestProblemasEHistorico(unittest.TestCase):
     def test_problemas(self):
         e = pl.Extracao(True, "", "", 0.0, "sem visor, sem placa")

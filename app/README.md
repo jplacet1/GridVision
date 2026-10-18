@@ -25,6 +25,7 @@ Status possíveis:
 | Lido | sem leitura informada; o valor lido volta ao analista | sim |
 | Revisão manual | confiança abaixo de 0,90 | sim |
 | Ilegível | número ou leitura não legíveis | sim |
+| Ilegível (certeza alta) | chance de a leitura ser legível abaixo de 0,20 (classificador de legibilidade), sem ter conferido | não: sai da fila como "Excluída (ilegível): pedir nova foto" |
 | Sem medidor | nenhum medidor na foto | não: sai da fila de revisão, mas fica na tabela e na exportação como "Excluída" |
 
 O limiar de confiança (0,90) é provisório. O erro tolerado nas leituras resolvidas sozinhas é zero, então o sistema só decide quando tem certeza.

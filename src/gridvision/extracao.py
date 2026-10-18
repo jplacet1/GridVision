@@ -48,6 +48,41 @@ class ResultadoExtracao:
     leitura: str       # vazio se não achou
     confianca: float   # 0 a 1
     detalhe: str       # texto curto para o analista e para depuração
+    prob_legivel: float = -1.0   # chance de a leitura ser legível (classificador v0); -1 se não calculada
+
+
+# Classificador de legibilidade (experiments/legibilidade): regressão logística sobre sinais do detector
+# e do recorte do visor. Limiar de "ilegível com certeza alta" escolhido pelo grupo em 18/10/2026 (0,20);
+# outro valor com GRIDVISION_LIMIAR_ILEGIVEL.
+_LEGIB = None
+
+
+def _legibilidade():
+    global _LEGIB
+    if _LEGIB is None:
+        import json
+        arq = Path(__file__).with_name("legibilidade_v0.json")
+        _LEGIB = json.load(open(arq, encoding="utf-8")) if arq.exists() else {}
+    return _LEGIB
+
+
+def limiar_ilegivel():
+    return float(os.environ.get("GRIDVISION_LIMIAR_ILEGIVEL", _legibilidade().get("limiar_ilegivel", 0.0)))
+
+
+def prob_legivel(sinais):
+    """P(leitura legível) pelos coeficientes gravados; -1 se o classificador não estiver disponível."""
+    import math
+    m = _legibilidade()
+    if m.get("modelo") != "logistica":
+        return -1.0
+    z = m["intercepto"]
+    for k, media, desvio, coef in zip(m["sinais"], m["media"], m["desvio"], m["coef"]):
+        v = sinais[k]
+        if k in m["log"]:
+            v = math.log1p(v)
+        z += coef * (v - media) / desvio
+    return 1 / (1 + math.exp(-z))
 
 
 def caminho_pesos():
@@ -128,6 +163,42 @@ def _leituras_do_visor(textos):
     return cands
 
 
+def detectar(img):
+    """Detector v0: melhor caixa de cada classe. Devolve {classe: ([x0, y0, x1, y1], confiança)}."""
+    _carregar()
+    r = _detector.predict(img, imgsz=480, conf=CONF_DETECTOR, device="cpu", verbose=False)[0]
+    melhor = {}
+    for caixa, c, s in zip(r.boxes.xyxy.tolist(), r.boxes.cls.tolist(), r.boxes.conf.tolist()):
+        n = r.names[int(c)]
+        if n not in melhor or s > melhor[n][1]:
+            melhor[n] = (caixa, s)
+    return melhor
+
+
+SINAIS = ["conf_medidor", "conf_visor", "conf_placa", "visor_nitidez", "visor_contraste", "visor_brilho",
+          "visor_altura", "visor_area", "foto_nitidez", "foto_brilho"]
+
+
+def sinais_legibilidade(img, melhor):
+    """Sinais rápidos (sem OCR) para estimar se a leitura é legível: confianças do detector e
+    qualidade do recorte do visor. Mesma função no treino do classificador e no app."""
+    import cv2
+    cinza = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    h, w = cinza.shape
+    s = {"conf_medidor": melhor.get("medidor", (None, 0.0))[1], "conf_visor": melhor.get("visor", (None, 0.0))[1],
+         "conf_placa": melhor.get("placa", (None, 0.0))[1],
+         "foto_nitidez": float(cv2.Laplacian(cinza, cv2.CV_64F).var()), "foto_brilho": float(cinza.mean()),
+         "visor_nitidez": 0.0, "visor_contraste": 0.0, "visor_brilho": 0.0, "visor_altura": 0.0, "visor_area": 0.0}
+    if "visor" in melhor:
+        x0, y0, x1, y1 = [int(round(v)) for v in melhor["visor"][0]]
+        rec = cinza[max(0, y0):min(h, y1), max(0, x0):min(w, x1)]
+        if rec.size:
+            s.update(visor_nitidez=float(cv2.Laplacian(rec, cv2.CV_64F).var()), visor_contraste=float(rec.std()),
+                     visor_brilho=float(rec.mean()), visor_altura=float(rec.shape[0]),
+                     visor_area=float(rec.size) / (h * w))
+    return s
+
+
 def extrair(caminho, informado=None):
     """`informado` = (numero, leitura) do CSV, ou None. Nunca lança erro por foto ruim: devolve vazio."""
     import cv2
@@ -136,16 +207,11 @@ def extrair(caminho, informado=None):
     if img is None:
         return ResultadoExtracao(False, "", "", 0.0, "não consegui abrir a imagem")
 
-    # 1. detector: melhor caixa de cada classe
-    r = _detector.predict(img, imgsz=480, conf=CONF_DETECTOR, device="cpu", verbose=False)[0]
-    nomes = r.names
-    melhor = {}
-    for caixa, c, s in zip(r.boxes.xyxy.tolist(), r.boxes.cls.tolist(), r.boxes.conf.tolist()):
-        n = nomes[int(c)]
-        if n not in melhor or s > melhor[n][1]:
-            melhor[n] = (caixa, s)
+    # 1. detector: melhor caixa de cada classe; chance de a leitura ser legível
+    melhor = detectar(img)
     if "medidor" not in melhor and "visor" not in melhor:
         return ResultadoExtracao(False, "", "", 1.0, "detector não achou medidor")
+    p_leg = prob_legivel(sinais_legibilidade(img, melhor))
     visor = melhor.get("visor", (None, 0))[0]
     placa = melhor.get("placa", (None, 0))[0]
 
@@ -208,4 +274,6 @@ def extrair(caminho, informado=None):
         numero, conf_n = max(na_placa, key=lambda x: (len(x[0]), x[1]))
 
     confianca = min(conf_l, conf_n) if leitura and numero else 0.0
-    return ResultadoExtracao(True, numero, leitura, round(confianca, 3), ", ".join(partes))
+    if p_leg >= 0:
+        partes.append(f"chance de legível {p_leg:.0%}")
+    return ResultadoExtracao(True, numero, leitura, round(confianca, 3), ", ".join(partes), round(p_leg, 3))
