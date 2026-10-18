@@ -1,40 +1,44 @@
-<View>
-  <Header value="1. Desenhe as caixas (pule se não houver medidor)"/>
-  <Image name="foto" value="$image" zoom="true" zoomControl="true" rotateControl="false"/>
-  <RectangleLabels name="caixas" toName="foto" strokeWidth="2">
-    <Label value="medidor" background="#0a5bd3" hotkey="1"/>
-    <Label value="placa" background="#02d3b2" hotkey="2"/>
-    <Label value="visor" background="#c42b1c" hotkey="3"/>
-  </RectangleLabels>
+<View style="display: flex; gap: 24px; align-items: flex-start;">
+  <View style="flex: 0 0 60%; max-width: 640px;">
+    <Header value="1. Caixas (pule se não houver medidor)"/>
+    <Image name="foto" value="$image" zoom="true" zoomControl="true" rotateControl="false"/>
+    <RectangleLabels name="caixas" toName="foto" strokeWidth="2">
+      <Label value="medidor" background="#0a5bd3" hotkey="1"/>
+      <Label value="placa" background="#02d3b2" hotkey="2"/>
+      <Label value="visor" background="#c42b1c" hotkey="3"/>
+    </RectangleLabels>
+  </View>
 
-  <Header value="2. Tem medidor na foto?"/>
-  <Choices name="tem_medidor" toName="foto" choice="single-radio" required="true">
-    <Choice value="sim" hotkey="q"/>
-    <Choice value="não" hotkey="w"/>
-    <Choice value="mais de um" hotkey="e"/>
-  </Choices>
+  <View style="flex: 1; min-width: 240px;">
+    <Header value="2. Tem medidor na foto?"/>
+    <Choices name="tem_medidor" toName="foto" choice="single-radio" required="true">
+      <Choice value="sim" hotkey="q"/>
+      <Choice value="não" hotkey="w"/>
+      <Choice value="mais de um" hotkey="e"/>
+    </Choices>
 
-  <Header value="3. O número do medidor (placa) dá para ler?"/>
-  <Choices name="numero_legivel" toName="foto" choice="single-radio" required="true">
-    <Choice value="sim" hotkey="a"/>
-    <Choice value="não" hotkey="s"/>
-    <Choice value="não aparece" hotkey="d"/>
-  </Choices>
+    <Header value="3. O número do medidor (placa) dá para ler?"/>
+    <Choices name="numero_legivel" toName="foto" choice="single-radio" required="true">
+      <Choice value="sim" hotkey="a"/>
+      <Choice value="não" hotkey="s"/>
+      <Choice value="não aparece" hotkey="d"/>
+    </Choices>
 
-  <Header value="4. A leitura (visor) dá para ler?"/>
-  <Choices name="leitura_legivel" toName="foto" choice="single-radio" required="true">
-    <Choice value="sim" hotkey="z"/>
-    <Choice value="não" hotkey="x"/>
-    <Choice value="não aparece" hotkey="c"/>
-  </Choices>
+    <Header value="4. A leitura (visor) dá para ler?"/>
+    <Choices name="leitura_legivel" toName="foto" choice="single-radio" required="true">
+      <Choice value="sim" hotkey="z"/>
+      <Choice value="não" hotkey="x"/>
+      <Choice value="não aparece" hotkey="c"/>
+    </Choices>
 
-  <Header value="5. Tipo do visor"/>
-  <Choices name="tipo_visor" toName="foto" choice="single-radio">
-    <Choice value="digital"/>
-    <Choice value="analógico (ponteiros ou roletes)"/>
-    <Choice value="não aparece"/>
-  </Choices>
+    <Header value="5. Tipo do visor"/>
+    <Choices name="tipo_visor" toName="foto" choice="single-radio">
+      <Choice value="digital"/>
+      <Choice value="analógico (ponteiros ou roletes)"/>
+      <Choice value="não aparece"/>
+    </Choices>
 
-  <Header value="Observação (opcional)"/>
-  <TextArea name="obs" toName="foto" rows="2" maxSubmissions="1"/>
+    <Header value="Observação (opcional)"/>
+    <TextArea name="obs" toName="foto" rows="2" maxSubmissions="1"/>
+  </View>
 </View>
