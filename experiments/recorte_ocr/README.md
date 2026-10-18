@@ -9,6 +9,7 @@ Teste do fluxo "detector acha o visor e a placa, recorta, OCR lê o recorte", na
 | `recortar.py` | ultralytics | Detecta visor e placa (caixa de maior confiança, conf ≥ 0,25, margem de 8%) e salva os recortes |
 | `ler_recortes.py` | PaddleOCR 3.7 | Amplia cada recorte até 96 px de altura (máx. 4x), lê e avalia |
 | `variantes.py` | PaddleOCR 3.7 | Variantes B (junta pedaços) e C (recorte lido como linha única, só o reconhecedor) |
+| `fator_ampliacao.py` | PaddleOCR 3.7 | Recorte ampliado com fator fixo de 2x, 3x e 4x, juntando pedaços |
 
 Recortes e saídas por foto ficam fora do Git (LGPD).
 
@@ -21,10 +22,16 @@ Recortes e saídas por foto ficam fora do Git (LGPD).
 | A. Recorte, OCR completo | 18 | 7 | 30 |
 | B. Recorte, junta pedaços | 19 | 7 | 30 |
 | C. Recorte, linha única | 11 | 3 | 34 |
+| D. Recorte ampliado 2x, junta pedaços | **23** | **8** | 31 |
+| E. Recorte ampliado 3x | 15 | 4 | 29 |
+| F. Recorte ampliado 4x | 11 | 3 | 30 |
 
 Detector achou o visor em 87 fotos e a placa em 70. Sem as 3 fotos que estavam no treino do detector, a leitura fica em 17 (A), 18 (B) e 11 (C) em 97.
 
 ## Conclusões
+
+- O fator de ampliação importa: em A, B e C o recorte ia só até 96 px de altura (≈ 1,4x no visor típico). Com 2x fixo (D), a leitura sobe para 23 e empata com a foto inteira ampliada no critério estrito (8). Com 3x e 4x, piora: o OCR parte os dígitos grandes.
+- Foto inteira ampliada (28) contra recorte 2x (23): 19 fotos acertadas pelos dois, 9 só pela foto inteira, 4 só pelo recorte. 7 dos 28 acertos da foto inteira são leituras de 1 a 3 dígitos, que podem coincidir com outros números impressos (ex.: "100" em "15(100)A").
 
 - O detector não é o gargalo. O OCR pronto lê mal os dígitos de display (7 segmentos, roletes): nas fotos que o recorte perdeu, ele quase sempre leu um dígito errado ou partiu a leitura.
 - A métrica "algum texto da foto igual à leitura" favorece a foto inteira, que gera dezenas de textos e pode coincidir por acaso. O recorte é a medida mais próxima do que o sistema faria.
