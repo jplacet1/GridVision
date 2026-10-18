@@ -98,6 +98,15 @@ Conferidos em 03/10/2026 contra o zip original (`Base de Dados Neoenergia PE.zip
 - **Sem acesso direto à Neoenergia.** O grupo trabalha com o que a CESAR repassa. Perguntas e validações do cliente (volume, gatilho da foto, precisão aceitável, metas) vão pela CESAR, a começar pelo professor Erick, e a resposta pode não vir. O que não for respondido segue como suposição do grupo, registrada como não validada.
 - **Resposta padrão para "qual o próximo passo".** Sai de [proximo-passo.md](proximo-passo.md): data de hoje comparada com a fase do cronograma e com uma checklist ordenada, em formato fixo. Quem concluir um item marca como `feito` lá no mesmo commit.
 
+### 17/10/2026
+
+- **Feedback do SR1.** O professor Erick gostou do SR1 no geral. Não houve outro ponto registrado (o feedback foi dado antes da gravação do atendimento).
+- **Experimento de OCR 1 (pré-processamento).** Nas 100 fotos do baseline, com PaddleOCR 3.7: ampliar a foto 2x levou a leitura correta (ignorando zeros à esquerda) de 20 para 28 e o número do medidor (igual ao texto) de 38 para 41. No teste pareado, o ganho na leitura não é acaso (p = 0,02); no número do medidor ainda pode ser (p = 0,38). O CLAHE ajuda no PaddleOCR 2.10 mas atrapalha no 3.7. Recortar com o detector de texto genérico piora. **Nova referência: PaddleOCR 3.7 com a foto ampliada 2x (28% na leitura, 41% no número do medidor).** Scripts, resultados completos e ambiente em [../experiments/ocr_preprocessamento/](../experiments/ocr_preprocessamento/).
+- **Documentar o ambiente de execução** dos experimentos junto dos resultados (pedido do professor). O hardware do cliente é desconhecido; por ora, abstrair.
+- **Interface gráfica é obrigatória.** O usuário final não é técnico e hoje usa planilha. Desktop ou web está em aberto: João Pedro citou TKinter com Docker em intranet ou subdomínio, Henrique prefere web (Streamlit), o professor sugeriu TTK Bootstrap ou PySimpleGUI como desktop mais apresentável. Decisão no atendimento de 24/10.
+- **Pauta de 24/10:** cronograma atualizado (avanços, atrasos e cortes de escopo) e proposta de arquitetura do front-end. O professor vai avaliar trabalho em paralelo (uma pessoa no front-end, o resto no modelo).
+- **SR2.** Espera-se uma infraestrutura mínima de testes, sem precisar ser robusta. Se o MVP funcional e a apresentação estiverem prontos antes da entrega, a disciplina é considerada entregue (nas notas do atendimento aparece "ACR", provável erro de fala ou transcrição; confirmar o termo).
+
 ## Disciplinas ligadas ao projeto
 
 Duas disciplinas usam o Projeto 4 como objeto e podem originar decisões do projeto. Detalhes em [fontes/mlops.md](fontes/mlops.md) e [fontes/deep-learning.md](fontes/deep-learning.md), lidos do Classroom em 04/10/2026.

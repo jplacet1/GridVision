@@ -40,7 +40,7 @@ Status: `feito`, `pendente`, `bloqueado` (depende de terceiros). Atualizar junto
 
 | # | Fase | Item | Responsável | Status |
 |---|---|---|---|---|
-| 1 | F1 | Analisar o feedback do SR1 e registrar em `contexto.md` | Grupo | pendente |
+| 1 | F1 | Analisar o feedback do SR1 e registrar em `contexto.md`. Professor gostou do SR1 no geral (17/10) | Grupo | feito |
 | 2 | F1 | Dizer se o teste de legibilidade dos dígitos (19/09) foi feito e o resultado. Confirmado em 05/10: é o baseline PaddleOCR de 02/10 (ver `contexto.md`) | Henrique | feito |
 | 3 | F1 | Piloto de anotação de caixas (medidor, ID, visor) em amostra de fotos | Grupo | pendente |
 | 4 | F1 | Planejar os próximos experimentos (OCR em recortes do visor, detector) | Grupo | pendente |
@@ -49,7 +49,11 @@ Status: `feito`, `pendente`, `bloqueado` (depende de terceiros). Atualizar junto
 | 7 | F1 | Completar o Data Understanding do Drive (coluna de imagens vazia, EDA do SR1) | João Pedro | pendente |
 | 8 | F2 | Rotular amostra suficiente para treino, validação e teste (divisão por medidor, 70/15/15) | Grupo | pendente |
 | 9 | F2 | Treinar detector de medidor, ID e visor | Grupo | pendente |
-| 10 | F2 | Testar OCR nos recortes do visor e comparar com o baseline (42% no ID, 20% na leitura) | Grupo | pendente |
+| 10 | F2 | Testar OCR nos recortes do visor e comparar com a referência (PaddleOCR 3.7 com foto ampliada 2x: 28% na leitura, 41% no número do medidor) | Grupo | pendente |
+| 10a | F2 | Experimento de pré-processamento (ampliação e CLAHE) nas 100 fotos do baseline | João Pedro | feito |
+| 10b | F2 | Atualizar o cronograma com avanços, atrasos e cortes de escopo, para o atendimento de 24/10 | Grupo | pendente |
+| 10c | F2 | Proposta de arquitetura do front-end (desktop ou web) para o atendimento de 24/10 | Grupo | pendente |
+| 10d | F2 | Repetir a ampliação 2x em umas 300 fotos, incluindo borradas, e medir a curva de cobertura e segurança por nível de confiança | Grupo | pendente |
 | 11 | F2 | Definir valor-alvo de localização, acerto exato da leitura e segurança, e pedir validação à Neoenergia pelo professor Erick. Se a resposta não vier, seguir com o valor do grupo e registrar como não validado | Grupo | pendente |
 | 12 | F3 | Refinar modelos e analisar erros | Grupo | pendente |
 | 13 | F4 | Avaliar no teste temporal (lote de 03/07) e escolher o modelo candidato | Grupo | pendente |
