@@ -4,6 +4,7 @@
 Uso: python exp2_37.py V1   (ampliada 2x + CLAHE)
      python exp2_37.py V1b  (só ampliada 2x)
      python exp2_37.py V0   (avalia a saída bruta do baseline, sem rodar OCR)
+     python exp2_37.py V0r  (foto inteira sem tratamento, rodando o OCR de novo)
 Grava exp2_<variante>.json com os textos e imprime só agregados.
 """
 import csv, json, re, sys, time, warnings
@@ -44,6 +45,7 @@ def avaliar(textos, leit, medidor):
     )
 
 def prep(img):
+    if var == "V0r": return img   # foto inteira sem tratamento, rodada de novo com os modelos atuais
     big = cv2.resize(img, None, fx=2, fy=2, interpolation=cv2.INTER_CUBIC)
     if var == "V1b": return big
     lab = cv2.cvtColor(big, cv2.COLOR_BGR2LAB)

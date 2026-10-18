@@ -7,7 +7,7 @@ Primeiro teste da fase de Modeling, sem treino e sem anotação. Mesmas 100 foto
 | Arquivo | O que faz |
 |---|---|
 | `exp1_paddle210.py` | Rodada 1, PaddleOCR 2.10: V0 foto inteira, V1 ampliada 2x + CLAHE, V2 detecta texto, recorta, amplia 3x e lê |
-| `exp2_paddle37.py` | Rodada 2, PaddleOCR 3.7 (mesma config do baseline): `V0` avalia a saída bruta do baseline, `V1` ampliada 2x + CLAHE, `V1b` só ampliada 2x |
+| `exp2_paddle37.py` | Rodada 2, PaddleOCR 3.7: `V0` avalia a saída bruta do baseline (PP-OCRv5), `V0r` roda a foto inteira de novo com os modelos atuais (PP-OCRv6), `V1` ampliada 2x + CLAHE, `V1b` só ampliada 2x |
 | `etapas_sintetico.py` | Gera as imagens das etapas usadas no artefato, a partir de um medidor sintético (nenhum dado da Neoenergia) |
 
 Os scripts esperam, na mesma pasta e fora do Git, a pasta `baseline_ocr/` do pacote do Henrique (`fotos/` e `amostra_100_nitidas.csv`). Fotos, CSV e saídas por foto não entram no repositório (LGPD).
@@ -23,7 +23,9 @@ Os scripts esperam, na mesma pasta e fora do Git, a pasta `baseline_ocr/` do pac
 | Nº do medidor contido no texto | 30 | 34 | 25 | 42 | **46** | **46** |
 | Nenhum texto detectado | 23 | 17 | 22 | 16 | **11** | 12 |
 
-Teste pareado (McNemar exato), 3.7 V0 contra V1b: leitura 9 contra 1 (p = 0,02); nº do medidor 4 contra 1 (p = 0,38).
+**Correção de 18/10/2026:** as rodadas V1 e V1b usaram os modelos PP-OCRv6 medium, e não os PP-OCRv5 do baseline. Controle com o mesmo modelo (V0r, PP-OCRv6, foto inteira sem ampliar): leitura 20, estrita 3, 1 dígito 8, medidor igual 40, contido 44, sem texto 16. A leitura não muda com o modelo (20 nos dois); o ganho de 20 para 28 vem da ampliação. No número do medidor, a maior parte do ganho vem do modelo (38 para 40) e a ampliação soma 1.
+
+Teste pareado (McNemar exato), V0r contra V1b, mesmo modelo: leitura 9 contra 1 (p = 0,02); nº do medidor 2 contra 1 (p = 1).
 
 Conclusões: ampliar 2x é a melhor mudança isolada; o CLAHE ajuda no 2.10 e atrapalha no 3.7; recortar com o detector de texto genérico piora (o recorte precisa de detector treinado para visor e placa).
 
@@ -37,6 +39,6 @@ Conclusões: ampliar 2x é a melhor mudança isolada; o CLAHE ajuda no 2.10 e at
 | GPU | AMD Radeon RX 6600 (não usada; tudo em CPU) |
 | Sistema | Windows 11 Home 10.0.26200 |
 | Rodada 1 | Python 3.12, PaddleOCR 2.10.0, PaddlePaddle 2.6.2, OpenCV 4.10 (ambiente do serviço de MLOps), modelos PP-OCRv4 `en` |
-| Rodada 2 | Python 3.12, PaddleOCR 3.7.0, PaddlePaddle 3.3.1, `opencv-python-headless`, modelos PP-OCRv5 `en`, `enable_mkldnn=False` |
+| Rodada 2 | Python 3.12, PaddleOCR 3.7.0, PaddlePaddle 3.3.1, `opencv-python-headless`, modelos **PP-OCRv6 medium** (padrão do PaddleX 3.7.2 instalado aqui), `enable_mkldnn=False` |
 
 Tempos (100 fotos): 2.10 V0 29 s, V1 44 s, V2 32 s. 3.7 V1 e V1b ≈ 18 min cada, rodando os dois em paralelo. O baseline 3.7 (foto inteira) levou ≈ 9 min na máquina do Henrique.
