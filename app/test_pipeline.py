@@ -37,6 +37,36 @@ class TestDecidir(unittest.TestCase):
         self.assertFalse(r.pendente)
 
 
+class TestProblemasEHistorico(unittest.TestCase):
+    def test_problemas(self):
+        e = pl.Extracao(True, "", "", 0.0, "sem visor, sem placa")
+        p = pl.classificar_problemas(e, pl.ILEGIVEL, 50, ("A1", "10"))
+        self.assertEqual(p, [pl.P_SEM_VISOR, pl.P_SEM_PLACA, pl.P_NUMERO, pl.P_BORRADA])
+        e = pl.Extracao(True, "123", "", 0.0, "visor 0.9, placa 0.8, display não mostra o consumo (função 03)")
+        self.assertIn(pl.P_FUNCAO, pl.classificar_problemas(e, pl.ILEGIVEL, 300, None))
+        self.assertEqual(pl.classificar_problemas(pl.Extracao(False, "", "", 1.0), pl.SEM_MEDIDOR, 300, None),
+                         [pl.P_SEM_MEDIDOR])
+
+    def test_historico_grava_e_le_a_decisao_mais_recente(self):
+        import tempfile
+        from pathlib import Path
+        antigo = pl.HISTORICO
+        with tempfile.TemporaryDirectory() as d:
+            pl.HISTORICO = Path(d) / "h.csv"
+            try:
+                r = pl.Resultado("f.jpg", "f.jpg", 200, "1", "10", 0.95, "1", "10", pl.DIVERGE, "m",
+                                 problemas=pl.P_DIVERGE, lote="lote1")
+                r.decisao = "Ilegível"; pl.registrar_decisao(r)
+                import time; time.sleep(1.1)
+                r.decisao, r.leitura_final = "Corrigido", "11"; pl.registrar_decisao(r)
+                h = pl.carregar_historico()
+                self.assertEqual(len(h), 1)
+                self.assertEqual((h[0].decisao, h[0].leitura_final), ("Corrigido", "11"))
+                self.assertEqual(h[0].lista_problemas, [pl.P_DIVERGE])
+            finally:
+                pl.HISTORICO = antigo
+
+
 @unittest.skipIf(pl._modelo is None, "módulo do modelo indisponível")
 class TestFuncaoDoDisplay(unittest.TestCase):
     """O display mostra o código da função (03 = consumo) à esquerda da leitura."""

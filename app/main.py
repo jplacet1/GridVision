@@ -68,12 +68,14 @@ class App(ttk.Window):
         self._cabecalho()
         self.corpo = ttk.Frame(self, padding=(24, 16))
         self.corpo.pack(fill=BOTH, expand=YES)
-        self.telas = {n: ttk.Frame(self.corpo) for n in ETAPAS}
+        self.telas = {n: ttk.Frame(self.corpo) for n in ETAPAS + ["Histórico"]}
+        self.origem_revisao = "Resultados"
         self._tela_lote(self.telas["Lote"])
         self._tela_processamento(self.telas["Processamento"])
         self._tela_resultados(self.telas["Resultados"])
         self._tela_revisao(self.telas["Revisão"])
         self._tela_exportacao(self.telas["Exportação"])
+        self._tela_historico(self.telas["Histórico"])
         self.ir("Lote")
 
     # ---------- estrutura ----------
@@ -83,6 +85,8 @@ class App(ttk.Window):
         ttk.Label(topo, text="GridVision", font=(self.f_display, 20, "bold")).pack(side=LEFT)
         ttk.Label(topo, text="Leitura de medidores por foto", foreground=COR["ink-muted"],
                   font=(self.f_sans, 10)).pack(side=LEFT, padx=(12, 0), pady=(8, 0))
+        ttk.Button(topo, text="Histórico", bootstyle=(SECONDARY, OUTLINE),
+                   command=self.mostrar_historico).pack(side=RIGHT, padx=(16, 0))
         self.passos = ttk.Frame(topo)
         self.passos.pack(side=RIGHT)
         self.rotulos_passo = {}
@@ -250,14 +254,21 @@ class App(ttk.Window):
         self.filtro.set("Pendentes do analista")
         self.filtro.pack(side=LEFT)
         self.filtro.bind("<<ComboboxSelected>>", lambda e: self._preencher_tabela())
+        ttk.Label(barra, text="PROBLEMA", font=(self.f_sans, 9, "bold"),
+                  foreground=COR["ink-muted"]).pack(side=LEFT, padx=(16, 8))
+        self.filtro_problema = ttk.Combobox(barra, state="readonly", width=28, values=["Todos"] + pl.PROBLEMAS)
+        self.filtro_problema.set("Todos")
+        self.filtro_problema.pack(side=LEFT)
+        self.filtro_problema.bind("<<ComboboxSelected>>", lambda e: self._preencher_tabela())
         ttk.Button(barra, text="Exportar", bootstyle=(SECONDARY, OUTLINE),
                    command=lambda: self.ir_exportacao()).pack(side=RIGHT)
         ttk.Button(barra, text="Revisar pendentes", bootstyle=PRIMARY,
                    command=self.revisar_pendentes).pack(side=RIGHT, padx=(0, 8))
 
-        cols = ("arquivo", "status", "numero", "leitura", "informado", "confianca", "decisao", "motivo")
-        nomes = ("Foto", "Status", "Nº lido", "Leitura lida", "Leitura informada", "Confiança", "Decisão", "Motivo")
-        larguras = (230, 120, 110, 100, 120, 80, 100, 320)
+        cols = ("arquivo", "status", "problemas", "numero", "leitura", "informado", "confianca", "decisao", "motivo")
+        nomes = ("Foto", "Status", "Problemas", "Nº lido", "Leitura lida", "Leitura informada", "Confiança",
+                 "Decisão", "Motivo")
+        larguras = (230, 110, 220, 100, 90, 110, 70, 90, 300)
         quadro = ttk.Frame(t)
         quadro.pack(fill=BOTH, expand=YES)
         self.tabela = ttk.Treeview(quadro, columns=cols, show=HEADINGS, bootstyle=PRIMARY)
@@ -295,12 +306,14 @@ class App(ttk.Window):
                   bootstyle=(INVERSE, DARK)).pack(anchor=W)
 
     def _visiveis(self):
-        f = self.filtro.get()
+        f, prob = self.filtro.get(), self.filtro_problema.get()
         if f == "Todos":
-            return list(self.resultados)
-        if f == "Pendentes do analista":
-            return [r for r in self.resultados if r.pendente]
-        return [r for r in self.resultados if r.status == f]
+            rs = list(self.resultados)
+        elif f == "Pendentes do analista":
+            rs = [r for r in self.resultados if r.pendente]
+        else:
+            rs = [r for r in self.resultados if r.status == f]
+        return rs if prob == "Todos" else [r for r in rs if prob in r.lista_problemas]
 
     def _preencher_tabela(self):
         self.tabela.delete(*self.tabela.get_children())
@@ -308,7 +321,7 @@ class App(ttk.Window):
         for i, r in enumerate(self.resultados):
             if id(r) in visiveis:
                 self.tabela.insert("", END, iid=str(i), tags=(r.status,), values=(
-                    r.arquivo, r.status, r.numero_final or r.numero_lido or "-",
+                    r.arquivo, r.status, ", ".join(r.lista_problemas) or "-", r.numero_final or r.numero_lido or "-",
                     r.leitura_final or r.leitura_lida or "-", r.leitura_informada or "-",
                     f"{r.confianca:.2f}",
                     r.decisao or ("Excluída" if r.excluido else "-" if r.precisa_analista else "Automático"),
@@ -317,11 +330,13 @@ class App(ttk.Window):
     def _abrir_linha(self, ev):
         sel = self.tabela.focus()
         if sel:
+            self.origem_revisao = "Resultados"
             self.fila_revisao = [self.resultados[int(i)] for i in self.tabela.get_children()]
             self.pos_revisao = self.fila_revisao.index(self.resultados[int(sel)])
             self._mostrar_revisao()
 
     def revisar_pendentes(self):
+        self.origem_revisao = "Resultados"
         self.fila_revisao = [r for r in self.resultados if r.pendente]
         if not self.fila_revisao:
             Messagebox.show_info("Nenhuma foto pendente.", "GridVision", parent=self)
@@ -383,8 +398,8 @@ class App(ttk.Window):
                    command=lambda: self._mover(-1)).pack(side=LEFT)
         ttk.Button(nav, text="Pular", bootstyle=(SECONDARY, OUTLINE),
                    command=lambda: self._mover(1)).pack(side=LEFT, padx=8)
-        ttk.Button(nav, text="Voltar aos resultados", bootstyle=(SECONDARY, LINK),
-                   command=self.mostrar_resultados).pack(side=RIGHT)
+        ttk.Button(nav, text="Voltar", bootstyle=(SECONDARY, LINK),
+                   command=self._voltar_da_revisao).pack(side=RIGHT)
         ttk.Label(lado, text="Se editar o número ou a leitura, a decisão fica como Corrigido.",
                   foreground=COR["ink-muted"], font=(self.f_sans, 9)).pack(anchor=W, pady=(16, 0))
         self.bind("<Return>", lambda e: self._decidir("Confirmado") if self.telas["Revisão"].winfo_ismapped() else None)
@@ -427,6 +442,11 @@ class App(ttk.Window):
         else:
             r.numero_final = r.leitura_final = ""
         r.decisao = decisao
+        try:
+            pl.registrar_decisao(r)
+        except OSError as e:
+            Messagebox.show_error(f"A decisão foi aplicada, mas não consegui gravar o histórico:\n{e}",
+                                  "GridVision", parent=self)
         self._mover(1)
 
     def _mover(self, passo):
@@ -435,6 +455,12 @@ class App(ttk.Window):
             self.pos_revisao = novo
             self._mostrar_revisao()
         elif novo >= len(self.fila_revisao):
+            self._voltar_da_revisao()
+
+    def _voltar_da_revisao(self):
+        if self.origem_revisao == "Histórico":
+            self.mostrar_historico()
+        else:
             self.mostrar_resultados()
 
     # ---------- 5. Exportação ----------
@@ -463,6 +489,91 @@ class App(ttk.Window):
         if p:
             pl.exportar(self.resultados, p)
             Messagebox.show_info(f"Resultado salvo em\n{p}", "GridVision", parent=self)
+
+
+    # ---------- Histórico ----------
+    def _tela_historico(self, t):
+        self.titulo(t, "Histórico de análises",
+                    "Todas as decisões do analista, de todos os lotes, gravadas só nesta máquina "
+                    f"({pl.HISTORICO}). Vale a decisão mais recente de cada foto. "
+                    "Duplo clique abre a foto para revisar de novo.")
+        barra = ttk.Frame(t)
+        barra.pack(fill=X, pady=(0, 8))
+        self.h_filtros = {}
+        for rotulo, valores, largura in (("DECISÃO", ["Todas", "Confirmado", "Corrigido", "Ilegível"], 14),
+                                         ("STATUS", ["Todos"] + pl.STATUS, 16),
+                                         ("PROBLEMA", ["Todos"] + pl.PROBLEMAS, 28)):
+            ttk.Label(barra, text=rotulo, font=(self.f_sans, 9, "bold"),
+                      foreground=COR["ink-muted"]).pack(side=LEFT, padx=(0, 8))
+            cb = ttk.Combobox(barra, state="readonly", width=largura, values=valores)
+            cb.set(valores[0])
+            cb.pack(side=LEFT, padx=(0, 16))
+            cb.bind("<<ComboboxSelected>>", lambda e: self._preencher_historico())
+            self.h_filtros[rotulo] = cb
+        ttk.Label(barra, text="BUSCAR", font=(self.f_sans, 9, "bold"),
+                  foreground=COR["ink-muted"]).pack(side=LEFT, padx=(0, 8))
+        self.h_busca = tk.StringVar()
+        ttk.Entry(barra, textvariable=self.h_busca, width=22).pack(side=LEFT)
+        self.h_busca.trace_add("write", lambda *a: self._preencher_historico())
+        self.h_resumo = ttk.Label(t, text="", foreground=COR["ink-muted"], font=(self.f_mono, 10))
+        self.h_resumo.pack(anchor=W, pady=(0, 8))
+
+        cols = ("quando", "lote", "arquivo", "status", "problemas", "decisao", "leitura", "informado", "motivo")
+        nomes = ("Analisado em", "Lote", "Foto", "Status", "Problemas", "Decisão", "Leitura final",
+                 "Leitura informada", "Motivo")
+        larguras = (140, 100, 220, 110, 220, 90, 90, 110, 260)
+        quadro = ttk.Frame(t)
+        quadro.pack(fill=BOTH, expand=YES)
+        self.h_tabela = ttk.Treeview(quadro, columns=cols, show=HEADINGS, bootstyle=PRIMARY)
+        for c, n, w in zip(cols, nomes, larguras):
+            self.h_tabela.heading(c, text=n, anchor=W)
+            self.h_tabela.column(c, width=w, anchor=W, stretch=(c == "motivo"))
+        for s, c in COR_STATUS.items():
+            self.h_tabela.tag_configure(s, foreground=COR[c])
+        rolagem = ttk.Scrollbar(quadro, orient=VERTICAL, command=self.h_tabela.yview)
+        self.h_tabela.configure(yscrollcommand=rolagem.set)
+        self.h_tabela.pack(side=LEFT, fill=BOTH, expand=YES)
+        rolagem.pack(side=RIGHT, fill=Y)
+        self.h_tabela.bind("<Double-1>", self._abrir_historico)
+        self.historico = []
+
+    def mostrar_historico(self):
+        try:
+            self.historico = pl.carregar_historico()
+        except (OSError, ValueError, KeyError) as e:
+            Messagebox.show_error(f"Não consegui ler o histórico:\n{e}", "GridVision", parent=self)
+            self.historico = []
+        self._preencher_historico()
+        self.ir("Histórico")
+
+    def _historico_visivel(self):
+        dec, st, prob = (self.h_filtros[k].get() for k in ("DECISÃO", "STATUS", "PROBLEMA"))
+        busca = self.h_busca.get().strip().lower()
+        return [r for r in self.historico
+                if (dec == "Todas" or r.decisao == dec) and (st == "Todos" or r.status == st)
+                and (prob == "Todos" or prob in r.lista_problemas)
+                and (not busca or busca in r.arquivo.lower() or busca in r.lote.lower())]
+
+    def _preencher_historico(self):
+        self.h_tabela.delete(*self.h_tabela.get_children())
+        vis = {id(r) for r in self._historico_visivel()}
+        for i, r in enumerate(self.historico):
+            if id(r) in vis:
+                self.h_tabela.insert("", END, iid=str(i), tags=(r.status,), values=(
+                    r.analisado_em, r.lote, r.arquivo, r.status, ", ".join(r.lista_problemas) or "-", r.decisao,
+                    r.leitura_final or "-", r.leitura_informada or "-", r.motivo))
+        visiveis = [r for r in self.historico if id(r) in vis]
+        cont = {d: sum(1 for r in visiveis if r.decisao == d) for d in ("Confirmado", "Corrigido", "Ilegível")}
+        self.h_resumo.configure(text=f"{len(visiveis)} de {len(self.historico)} fotos  ·  "
+                                     + "  ·  ".join(f"{k} {v}" for k, v in cont.items()))
+
+    def _abrir_historico(self, ev):
+        sel = self.h_tabela.focus()
+        if sel:
+            self.origem_revisao = "Histórico"
+            self.fila_revisao = [self.historico[int(i)] for i in self.h_tabela.get_children()]
+            self.pos_revisao = self.fila_revisao.index(self.historico[int(sel)])
+            self._mostrar_revisao()
 
 
 if __name__ == "__main__":

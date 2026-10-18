@@ -42,6 +42,26 @@ AUTOMATICOS = {CONFERE}
 # Continuam na tabela de resultados e na exportação, marcadas como excluídas.
 EXCLUIDOS = {SEM_MEDIDOR}
 
+# Tipos de problema, para filtrar resultados e histórico. Uma foto pode ter mais de um.
+P_SEM_MEDIDOR = "Sem medidor"
+P_SEM_VISOR = "Visor não encontrado"
+P_SEM_PLACA = "Placa não encontrada"
+P_LEITURA = "Leitura não lida"
+P_NUMERO = "Número não lido"
+P_FUNCAO = "Display em outra função"
+P_DIVERGE = "Leitura diferente da informada"
+P_CONFIANCA = "Confiança baixa"
+P_BORRADA = "Foto borrada"
+P_SEM_INFORMADO = "Sem leitura informada"
+PROBLEMAS = [P_SEM_MEDIDOR, P_SEM_VISOR, P_SEM_PLACA, P_LEITURA, P_NUMERO, P_FUNCAO, P_DIVERGE,
+             P_CONFIANCA, P_BORRADA, P_SEM_INFORMADO]
+
+# Histórico das decisões do analista: arquivo local, fora do Git (tem nomes de fotos e leituras).
+HISTORICO = Path(os.environ.get("GRIDVISION_HISTORICO", Path.home() / "gridvision_dados" / "historico" / "historico.csv"))
+CAMPOS_HISTORICO = ["analisado_em", "lote", "arquivo", "caminho", "status", "problemas", "numero_lido", "leitura_lida",
+                    "numero_informado", "leitura_informada", "decisao", "numero_final", "leitura_final",
+                    "confianca", "nitidez", "motivo"]
+
 
 @dataclass
 class Extracao:
@@ -67,6 +87,13 @@ class Resultado:
     decisao: str = ""          # preenchido na revisão: Confirmado, Corrigido, Ilegível
     numero_final: str = ""
     leitura_final: str = ""
+    problemas: str = ""        # tipos de problema separados por " | " (ver PROBLEMAS)
+    lote: str = ""             # nome da pasta do lote
+    analisado_em: str = ""     # data e hora da decisão do analista
+
+    @property
+    def lista_problemas(self):
+        return [p for p in self.problemas.split(" | ") if p]
 
     @property
     def precisa_analista(self):
@@ -166,6 +193,24 @@ def decidir(ext, informado):
     return DIVERGE, f"foto {ext.leitura}, informado {informado[1]}"
 
 
+def classificar_problemas(ext, status, nit, informado):
+    """Tipos de problema de uma foto, a partir do que o modelo achou e da decisão."""
+    p = []
+    if status == SEM_MEDIDOR:
+        return [P_SEM_MEDIDOR]
+    det = ext.detalhe or ""
+    if "sem visor" in det: p.append(P_SEM_VISOR)
+    if "sem placa" in det: p.append(P_SEM_PLACA)
+    if "display não mostra o consumo" in det: p.append(P_FUNCAO)
+    elif not ext.leitura and "sem visor" not in det: p.append(P_LEITURA)
+    if not ext.numero: p.append(P_NUMERO)
+    if status == DIVERGE: p.append(P_DIVERGE)
+    if status == REVISAO: p.append(P_CONFIANCA)
+    if status == LIDO: p.append(P_SEM_INFORMADO)
+    if nit < LIMIAR_NITIDEZ: p.append(P_BORRADA)
+    return p
+
+
 def processar(caminho, informado=None):
     caminho = Path(caminho)
     nit = nitidez(caminho)
@@ -177,7 +222,44 @@ def processar(caminho, informado=None):
         motivo += f" (foto borrada, nitidez {nit:.0f})"
     num_inf, leit_inf = informado or ("", "")
     return Resultado(caminho.name, str(caminho), nit, ext.numero, ext.leitura, ext.confianca,
-                     num_inf, leit_inf, status, motivo)
+                     num_inf, leit_inf, status, motivo,
+                     problemas=" | ".join(classificar_problemas(ext, status, nit, informado)),
+                     lote=caminho.parent.name)
+
+
+def registrar_decisao(r):
+    """Acrescenta a decisão do analista ao histórico (uma linha por decisão; revisar de novo
+    acrescenta outra linha, e a mais recente vale)."""
+    from datetime import datetime
+    r.analisado_em = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    HISTORICO.parent.mkdir(parents=True, exist_ok=True)
+    novo = not HISTORICO.exists()
+    linha = asdict(r)
+    linha["confianca"], linha["nitidez"] = f"{r.confianca:.3f}", f"{r.nitidez:.1f}"
+    with open(HISTORICO, "a", encoding="utf-8-sig" if novo else "utf-8", newline="") as f:
+        w = csv.DictWriter(f, fieldnames=CAMPOS_HISTORICO, delimiter=";", extrasaction="ignore")
+        if novo:
+            w.writeheader()
+        w.writerow(linha)
+
+
+def carregar_historico():
+    """Decisões do histórico, a mais recente de cada foto primeiro. Devolve [Resultado]."""
+    if not HISTORICO.exists():
+        return []
+    with open(HISTORICO, encoding="utf-8-sig", newline="") as f:
+        linhas = list(csv.DictReader(f, delimiter=";"))
+    vistos, saida = set(), []
+    for l in sorted(linhas, key=lambda l: l["analisado_em"], reverse=True):
+        chave = (l["lote"], l["arquivo"])
+        if chave in vistos:
+            continue
+        vistos.add(chave)
+        saida.append(Resultado(l["arquivo"], l["caminho"], float(l["nitidez"] or 0), l["numero_lido"],
+                               l["leitura_lida"], float(l["confianca"] or 0), l["numero_informado"],
+                               l["leitura_informada"], l["status"], l["motivo"], l["decisao"],
+                               l["numero_final"], l["leitura_final"], l["problemas"], l["lote"], l["analisado_em"]))
+    return saida
 
 
 def exportar(resultados, destino):

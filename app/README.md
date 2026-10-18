@@ -8,7 +8,10 @@ Protótipo desktop em ttkbootstrap, com o fluxo completo do analista. A escolha 
 2. **Processamento:** para cada foto, mede a nitidez, extrai número do medidor e leitura e decide o status.
 3. **Resultados:** resumo por status e tabela filtrável. Duplo clique abre a foto na revisão.
 4. **Revisão:** o analista vê a foto, confirma, corrige ou marca como ilegível. Enter confirma.
-5. **Exportação:** CSV com status, valor lido, valor informado e decisão do analista.
+5. **Exportação:** CSV com status, problemas, valor lido, valor informado e decisão do analista.
+6. **Histórico** (botão no topo): todas as decisões do analista, de todos os lotes, com filtro por decisão, status e tipo de problema e busca por foto ou lote. Duplo clique reabre a foto para revisar de novo. Cada decisão é gravada na hora em `~/gridvision_dados/historico/historico.csv` (fora do Git; outro caminho com `GRIDVISION_HISTORICO`); revisar de novo acrescenta uma linha, e vale a mais recente.
+
+Tipos de problema (filtro em Resultados e no Histórico): sem medidor, visor não encontrado, placa não encontrada, leitura não lida, número não lido, display em outra função, leitura diferente da informada, confiança baixa, foto borrada, sem leitura informada. Uma foto pode ter mais de um.
 
 Status possíveis:
 
