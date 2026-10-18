@@ -4,14 +4,17 @@ Protótipo desktop em ttkbootstrap, com o fluxo completo do analista. A escolha 
 
 ## Fluxo
 
-1. **Lote:** o analista escolhe a pasta de fotos e, se tiver, o CSV com a leitura informada pelo leiturista (formato da base: `;`, colunas `Foto do medidor`, `Numero do medidor`, `Posicao do medidor lida`).
-2. **Processamento:** para cada foto, mede a nitidez, extrai número do medidor e leitura e decide o status.
-3. **Resultados:** resumo por status e tabela filtrável. Duplo clique abre a foto na revisão.
-4. **Revisão:** o analista vê a foto, confirma, corrige ou marca como ilegível. Enter confirma.
-5. **Exportação:** CSV com status, problemas, valor lido, valor informado e decisão do analista.
-6. **Histórico** (botão no topo): todas as decisões do analista, de todos os lotes, com filtro por decisão, status e tipo de problema e busca por foto ou lote. Duplo clique reabre a foto para revisar de novo. Cada decisão é gravada na hora em `~/gridvision_dados/historico/historico.csv` (fora do Git; outro caminho com `GRIDVISION_HISTORICO`); revisar de novo acrescenta uma linha, e vale a mais recente.
+As cinco etapas do topo são clicáveis, a qualquer momento (o contador entre parênteses mostra quantas fotos há em cada uma):
 
-Tipos de problema (filtro em Resultados e no Histórico): sem medidor, visor não encontrado, placa não encontrada, leitura não lida, número não lido, display em outra função, leitura diferente da informada, confiança baixa, foto borrada, sem leitura informada. Uma foto pode ter mais de um.
+1. **Lote:** o analista escolhe a pasta de fotos e, se tiver, o CSV com a leitura informada pelo leiturista (formato da base: `;`, colunas `Foto do medidor`, `Numero do medidor`, `Posicao do medidor lida`).
+2. **Processamento:** abre sozinha ao começar o lote. Progresso e contadores ao vivo; dá para sair dela e voltar, o lote continua.
+3. **Resultados:** o que já está resolvido. As fotos com "Confere" (alta confiança) entram aqui enquanto o lote processa; também aparecem as revisadas e as excluídas (sem medidor). Filtro por situação e por tipo de problema; duplo clique reabre a foto para corrigir.
+4. **Revisão:** fila do que está pendente, que cresce enquanto o lote processa, com filtro por tipo de problema. Ao decidir, a próxima abre sozinha. Enter confirma.
+5. **Exportação:** CSV com status, problemas, valor lido, valor informado e decisão. Exportar todos, só os filtrados (situação, status, problema) ou as linhas selecionadas (Ctrl e Shift para várias).
+
+**Histórico** (no topo): todas as decisões do analista, de todos os lotes, com filtro por decisão, status e tipo de problema e busca por foto ou lote. Duplo clique reabre a foto para revisar de novo. Cada decisão é gravada na hora em `~/gridvision_dados/historico/historico.csv` (fora do Git; outro caminho com `GRIDVISION_HISTORICO`); revisar de novo acrescenta uma linha, e vale a mais recente.
+
+Tipos de problema (filtro em Resultados, Revisão, Exportação e Histórico): sem medidor, visor não encontrado, placa não encontrada, leitura não lida, número não lido, display em outra função, leitura diferente da informada, confiança baixa, foto borrada, sem leitura informada. Uma foto pode ter mais de um.
 
 Status possíveis:
 
