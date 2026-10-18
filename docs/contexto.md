@@ -52,6 +52,7 @@ Cronograma completo: `Cronograma_CRISP_DM_Projeto_4.pdf` na pasta do Drive. É o
 - [Notion](https://app.notion.com/p/GridVision-3c10a1e8539280048ea3ec14161c1709)
 - [Drive](https://drive.google.com/drive/folders/1s2D1-MM3H-wqDQ6Sd0mfykE-Dz6VTJ3J)
 - [Repositório](https://github.com/jplacet1/GridVision)
+- [Experimento de OCR 1](https://claude.ai/artifact/5ebXfTqPCAmeJuMRWBxqPN) e [Piloto e detector v0](https://claude.ai/artifact/4bH2TJ3D2u9Ljiovfr6dEd) (artefatos do Claude com os resultados de 17 e 18/10; privados, compartilhar pelo Share)
 - [Design system do GridVision](https://claude.ai/artifact/QE97oYdBevqSvzrTb9VWj5) (artefato do Claude; o Claude de qualquer integrante lê por esse link. Se não abrir, peça ao João Pedro para compartilhar)
 
 ## Dados (números da EDA apresentados no SR1)
@@ -99,7 +100,7 @@ Conferidos em 03/10/2026 contra o zip original (`Base de Dados Neoenergia PE.zip
 - **Sem acesso direto à Neoenergia.** O grupo trabalha com o que a CESAR repassa. Perguntas e validações do cliente (volume, gatilho da foto, precisão aceitável, metas) vão pela CESAR, a começar pelo professor Erick, e a resposta pode não vir. O que não for respondido segue como suposição do grupo, registrada como não validada.
 - **Resposta padrão para "qual o próximo passo".** Sai de [proximo-passo.md](proximo-passo.md): data de hoje comparada com a fase do cronograma e com uma checklist ordenada, em formato fixo. Quem concluir um item marca como `feito` lá no mesmo commit.
 
-### 17/10/2026
+### 17 e 18/10/2026
 
 - **Feedback do SR1.** O professor Erick gostou do SR1 no geral. Não houve outro ponto registrado (o feedback foi dado antes da gravação do atendimento).
 - **Experimento de OCR 1 (pré-processamento).** Nas 100 fotos do baseline, com PaddleOCR 3.7: ampliar a foto 2x levou a leitura correta (ignorando zeros à esquerda) de 20 para 28 e o número do medidor (igual ao texto) de 38 para 41. No teste pareado, o ganho na leitura não é acaso (p = 0,02); no número do medidor ainda pode ser (p = 0,38). O CLAHE ajuda no PaddleOCR 2.10 mas atrapalha no 3.7. Recortar com o detector de texto genérico piora. **Nova referência: PaddleOCR 3.7 com a foto ampliada 2x (28% na leitura, 41% no número do medidor).** Correção de 18/10: essa rodada usou os modelos PP-OCRv6 medium (o baseline usou PP-OCRv5). Com o v6 sem ampliar, a leitura fica em 20, igual ao baseline, e o número do medidor em 40: o ganho na leitura vem da ampliação (pareado, mesmo modelo: 9 contra 1, p = 0,02); no número, quase todo do modelo. Scripts, resultados completos e ambiente em [../experiments/ocr_preprocessamento/](../experiments/ocr_preprocessamento/).
@@ -116,6 +117,21 @@ Conferidos em 03/10/2026 contra o zip original (`Base de Dados Neoenergia PE.zip
 - **Função do display (informado pelo João Pedro, 18/10/2026).** Medidores digitais mostram o código da função à esquerda do valor; a função de consumo (leitura) é geralmente a 03. O código é separado da leitura; se o display mostrar outra função, a leitura não é aceita e a foto vai ao analista. Lista de códigos de consumo configurável (padrão: 03).
 - **Fotos sem medidor saem da revisão (decisão do grupo, 18/10/2026).** Ficam na tabela e na exportação como "Excluída", sem ir à fila do analista. Risco: falso negativo do detector (4 em 200 na avaliação) tira da revisão uma foto que tinha medidor.
 - **SR2.** Espera-se uma infraestrutura mínima de testes, sem precisar ser robusta. Se o MVP funcional e a apresentação estiverem prontos antes da entrega, a disciplina é considerada entregue (nas notas do atendimento aparece "ACR", provável erro de fala ou transcrição; confirmar o termo).
+
+## Ambiente local (fora do Git)
+
+Na máquina do João Pedro (AMD Ryzen 5 5600X, 16 GB, Windows 11; a GPU AMD Radeon RX 6600 não acelera PaddlePaddle nem o YOLO no Windows, então tudo roda em CPU). Pasta `C:\Users\joaop\gridvision_dados`:
+
+| Caminho | O que é |
+|---|---|
+| `venv_app` | Python 3.12 com PyTorch CPU, Ultralytics, PaddleOCR 3.7 e ttkbootstrap: roda o app com o modelo (`venv_app\Scripts\python.exe app\main.py`, a partir da raiz do repositório) |
+| `venv_labelstudio` | Label Studio (`label-studio start`, porta 8080). Projeto 1: piloto (300 fotos); projeto 4: avaliação (200 fotos) |
+| `detector_v0/runs/v0/weights/best.pt` | Pesos do detector v0 (o app procura aqui; outro caminho com `GRIDVISION_DETECTOR`) |
+| `piloto/`, `avaliacao/` | Fotos e anotações exportadas do piloto e da avaliação |
+| `lote_demo/` | 20 fotos da validação nunca usadas + `informado.csv`, para demonstrar o app |
+| `historico/historico.csv` | Decisões do analista gravadas pelo app |
+
+O zip original da base está em `C:\Users\joaop\Downloads\Base de Dados Neoenergia PE (1).zip`. Para outra pessoa rodar o app com o modelo: [../app/README.md](../app/README.md).
 
 ## Disciplinas ligadas ao projeto
 

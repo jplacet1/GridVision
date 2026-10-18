@@ -132,12 +132,18 @@ A pasta Apresentações tem "Copy of GridVision SR1.pdf" e "Copy of GridVision_K
 - Marcos 12/09, 03/10 e 05/12 (CRO, `contexto.md`). Links do Site, Notion e Drive (Links Úteis, `contexto.md`).
 - Metas de revocação 0,85, precisão 0,70 e 10 minutos para 3.500 fotos (DEF, S29).
 
+## 16. Meta acima do teto de legibilidade (18/10/2026)
+
+A meta é resolver 50% das leituras sem analista, com erro zero. Medido em 200 fotos aleatórias de validação e teste: só 46% permitem ler leitura e número do medidor, e 56% só a leitura. Mesmo um modelo perfeito não chega a 50% se precisar das duas coisas. Ver `contexto.md`, 17 e 18/10.
+
 ## Pendências
 
 | Item | O que falta | Responsável sugerido |
 |---|---|---|
-| 2 | Dizer se o teste de legibilidade dos dígitos em recortes foi feito e qual o resultado | Henrique |
 | 13 | Perguntas da BU (tempo médio de análise, tipos de medidor mais frequentes, precisão aceitável, o que fica sempre humano). D1 a D5, volume e gatilho da foto foram esclarecidos pelo grupo em 17/10/2026 | Grupo, com a Neoenergia |
 | 15 | Escolher a versão oficial do Kickoff e do SR1 e apagar as cópias em Apresentações ("Copy of ...") | Grupo |
 | Metas | Definir valor-alvo para localização, acerto exato da leitura e segurança, e validar com a Neoenergia | Grupo, antes do SR2 |
+| 16 | Meta de 50% sem analista contra o teto medido de 46% (leitura e número legíveis juntos) ou 56% (só leitura). Decidir se a meta passa a valer sobre as fotos legíveis ou se o sistema confere só a leitura | Grupo, levar ao professor em 24/10 |
+| 17 | Termo "ACR" nas notas do atendimento de 17/10 (condição para a disciplina ser considerada entregue). Provável erro de fala ou transcrição | Grupo, confirmar com o professor |
+| 18 | Códigos de função de consumo do display além do 03 (o grupo disse "geralmente a 03") | Grupo |
 | Data Understanding | Completar o documento do Drive (coluna de imagens vazia, EDA do SR1 fora dele) | João Pedro |
