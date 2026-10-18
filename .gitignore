@@ -32,3 +32,4 @@ Thumbs.db
 
 # Listas de arquivos (só nomes, sem dados) podem ser versionadas
 !experiments/piloto_anotacao/*.csv
+!experiments/detector_v0/*.csv
