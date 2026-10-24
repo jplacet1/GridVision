@@ -51,14 +51,15 @@ Status: `feito`, `pendente`, `bloqueado` (depende de terceiros). Atualizar junto
 | 9 | F2 | Treinar detector de medidor, ID e visor. v0 treinado em 18/10 com as 300 fotos do piloto; mAP50 0,942 em validação + teste | João Pedro | feito |
 | 10 | F2 | Testar OCR nos recortes do visor e comparar com a referência (PaddleOCR 3.7 com foto ampliada 2x: 28% na leitura, 41% no número do medidor). Feito em 18/10: OCR pronto no recorte não supera (18 na leitura); próximo é reconhecedor próprio para o visor | João Pedro | feito |
 | 10a | F2 | Experimento de pré-processamento (ampliação e CLAHE) nas 100 fotos do baseline | João Pedro | feito |
-| 10b | F2 | Atualizar o cronograma com avanços, atrasos e cortes de escopo, para o atendimento de 24/10 | Grupo | pendente |
+| 10b | F2 | Atualizar o cronograma com avanços, atrasos e cortes de escopo, para o atendimento de 24/10. Feito no Notion em 24/10: status das fases corrigidos e seção "Avanços, atrasos e cortes" | Grupo | feito |
 | 10c | F2 | Proposta de arquitetura do front-end para o atendimento de 24/10. Decidido desktop (ttkbootstrap) em 23/10: uso interno, implantação mais simples. Protótipo em `app/` já roda com o modelo; falta apresentar ao professor | Grupo | em andamento |
 | 10d | F2 | Repetir a ampliação 2x em umas 300 fotos, incluindo borradas, e medir a curva de cobertura e segurança por nível de confiança | Grupo | pendente |
 | 10e | F2 | Medir o MVP nas 100 fotos de validação anotadas (cobertura, perdas, erros: "Confere" em foto ilegível tem de ser zero) e calibrar o limiar de confiança | João Pedro | pendente |
-| 10f | F2 | Decidir se o sistema confere só a leitura (número do cadastro) ou leitura e número (teto 56% contra 46%) | Grupo | pendente |
+| 10f | F2 | Decidir se o sistema confere só a leitura (número do cadastro) ou leitura e número (teto 56% contra 46%). Decidido em 24/10: leitura e número, com saída para o analista (ver `contexto.md`) | Grupo | feito |
+| 10k | F2 | Implementar no app a regra de 24/10: comparar o número do medidor com o CSV; número ilegível com leitura batendo vai ao analista com a leitura preenchida | João Pedro | pendente |
 | 10g | F2 | Acelerar o app: comparar PP-OCRv5 mobile com v6 medium e processar fotos em paralelo | João Pedro | pendente |
 | 10i | F2 | Classificador de legibilidade e status "Ilegível (certeza alta)" no app (limiar 0,20). Falta o grupo definir o destino das fotos excluídas | João Pedro | feito |
-| 10j | F2 | Conferir à mão os 10 "Confere" automáticos do lote_demo2 (prova do erro zero) | João Pedro | pendente |
+| 10j | F2 | Conferir à mão os 10 "Confere" automáticos do lote_demo2 (prova do erro zero). Feito em 23/10: 10 de 10 certos | João Pedro | feito |
 | 10h | F2 | Abrir e mesclar os PRs das branches `docs/guia-do-grupo` e `docs/baseline-ocr`; atualizar o Notion com o trabalho de 18/10 | João Pedro | pendente |
 | 11 | F2 | Definir valor-alvo de localização, acerto exato da leitura e segurança, e pedir validação à Neoenergia pelo professor Erick. Se a resposta não vier, seguir com o valor do grupo e registrar como não validado | Grupo | pendente |
 | 12 | F3 | Refinar modelos e analisar erros: reconhecedor próprio do visor (ajuste fino com recortes legíveis), comparar EasyOCR e Tesseract, melhorar a placa no detector | Grupo | pendente |

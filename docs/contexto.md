@@ -122,6 +122,10 @@ Conferidos em 03/10/2026 contra o zip original (`Base de Dados Neoenergia PE.zip
 - **Leitor de dígitos próprio (CNN) não funcionou com os rótulos do CSV (18/10/2026).** Treinado com 3.075 recortes do visor e a leitura do CSV como rótulo: acerto exato de 20% (CNN do zero) e 8% (ResNet18 pré-treinada) na validação, abaixo do OCR. Diagnóstico em 200 recortes: o OCR confirma a leitura do CSV em só 33%, e em pelo menos 10% o visor mostra outro número (rótulo não bate com a imagem). O gargalo é dado, não arquitetura. Proposta: transcrever o visor à mão em cerca de 500 recortes e treinar de novo (CNN ou ajuste fino do PaddleOCR). Detalhes em [../experiments/leitor_digitos/](../experiments/leitor_digitos/).
 - **SR2.** Espera-se uma infraestrutura mínima de testes, sem precisar ser robusta. Se o MVP funcional e a apresentação estiverem prontos antes da entrega, a disciplina é considerada entregue (nas notas do atendimento aparece "ACR", provável erro de fala ou transcrição; confirmar o termo).
 
+### 24/10/2026
+
+- **O Confere automático exige leitura e número do medidor (decisão do grupo, 24/10/2026).** O sistema só dá "Confere" sozinho quando a leitura e o número do medidor lidos na foto batem com os do CSV. Assim ele prova também que a foto é do medidor certo (não do vizinho nem reaproveitada). Teto pela foto: os dois legíveis em 46% da amostra aleatória, contra 56% só da leitura. Casos de saída: se a leitura bate e o número está ilegível, a foto vai ao analista com a leitura preenchida (não vira "Ilegível"); se o número lido difere do CSV, vira "Diverge" e vai ao analista. Ainda não implementado no app: hoje o app exige o número legível, mas não o compara com o CSV.
+
 ## Ambiente local (fora do Git)
 
 Na máquina do João Pedro (AMD Ryzen 5 5600X, 16 GB, Windows 11; a GPU AMD Radeon RX 6600 não acelera PaddlePaddle nem o YOLO no Windows, então tudo roda em CPU). Pasta `C:\Users\joaop\gridvision_dados`:
