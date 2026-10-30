@@ -7,7 +7,7 @@ Uso (ambiente do app): python preparar_transcricao.py <pasta leitor_digitos> <pa
 - Amplia cada recorte 3x e salva em <saída>/fotos/parteN (100 por parte, limite do Label Studio).
 - Lê cada recorte com o PaddleOCR (ampliado 2x) e grava <saída>/predicoes.json com o texto lido e as
   caixas sugeridas de função e leitura, para pré-preencher a tarefa: o anotador só corrige.
-- Grava transcricao_v1.csv (só nomes de arquivo e conjunto) ao lado do script. Fica fora do Git: repositório público.
+- Grava transcricao_v1.csv (só nomes de arquivo e conjunto) no repositório.
 """
 import csv, json, random, sys
 from pathlib import Path
