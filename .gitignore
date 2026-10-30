@@ -34,3 +34,4 @@ Thumbs.db
 !experiments/piloto_anotacao/*.csv
 !experiments/detector_v0/*.csv
 !experiments/avaliacao_detector/*.csv
+!experiments/leitor_digitos/*.csv

@@ -6,7 +6,7 @@ import pipeline as pl
 
 
 class TestDecidir(unittest.TestCase):
-    def ext(self, leitura="42884", numero="A123", confianca=0.95, tem_medidor=True):
+    def ext(self, leitura="42884", numero="123", confianca=0.95, tem_medidor=True):
         return pl.Extracao(tem_medidor, numero, leitura, confianca)
 
     def test_sem_medidor(self):
@@ -28,6 +28,25 @@ class TestDecidir(unittest.TestCase):
         status = pl.decidir(self.ext(), None)[0]
         self.assertEqual(status, pl.LIDO)
         self.assertNotIn(status, pl.AUTOMATICOS)
+
+    # regra de 24/10/2026: Confere exige leitura e número do medidor
+    def test_numero_diferente_diverge(self):
+        st = pl.decidir(self.ext(numero="999"), ("A123", "42884"))
+        self.assertEqual(st[0], pl.DIVERGE)
+        self.assertIn("número do medidor", st[1])
+
+    def test_leitura_bate_numero_ilegivel_vai_ao_analista(self):
+        st = pl.decidir(self.ext(numero=""), ("A123", "42884"))[0]
+        self.assertEqual(st, pl.SO_LEITURA)
+        self.assertTrue(pl.Resultado("f", "f", 200, "", "42884", 0.95, "A123", "42884", st, "").precisa_analista)
+
+    def test_leitura_diverge_numero_ilegivel_continua_ilegivel(self):
+        self.assertEqual(pl.decidir(self.ext(numero=""), ("A123", "42885"))[0], pl.ILEGIVEL)
+
+    def test_numero_com_varios_medidores_e_zero_a_esquerda(self):
+        self.assertTrue(pl.mesmo_numero("0456", "123/0456"))
+        self.assertFalse(pl.mesmo_numero("456", "0456"))
+        self.assertFalse(pl.mesmo_numero("", "0456"))
 
 
     def test_sem_medidor_sai_da_revisao(self):
@@ -54,7 +73,10 @@ class TestCertezaDeIlegivel(unittest.TestCase):
         self.assertEqual(pl.decidir(self.ext(0.60), ("A1", "10"))[0], pl.ILEGIVEL)
 
     def test_confere_vence_a_chance_baixa(self):
-        self.assertEqual(pl.decidir(self.ext(0.05, "10", "A1"), ("A1", "10"))[0], pl.CONFERE)
+        self.assertEqual(pl.decidir(self.ext(0.05, "10", "1"), ("A1", "10"))[0], pl.CONFERE)
+
+    def test_so_leitura_vence_a_chance_baixa(self):
+        self.assertEqual(pl.decidir(pl.Extracao(True, "", "10", 0.95, "", 0.05), ("A1", "10"))[0], pl.SO_LEITURA)
 
     def test_sem_classificador_nao_muda_nada(self):
         self.assertEqual(pl.decidir(self.ext(-1.0), ("A1", "10"))[0], pl.ILEGIVEL)
@@ -69,6 +91,10 @@ class TestProblemasEHistorico(unittest.TestCase):
         self.assertIn(pl.P_FUNCAO, pl.classificar_problemas(e, pl.ILEGIVEL, 300, None))
         self.assertEqual(pl.classificar_problemas(pl.Extracao(False, "", "", 1.0), pl.SEM_MEDIDOR, 300, None),
                          [pl.P_SEM_MEDIDOR])
+        e = pl.Extracao(True, "999", "10", 0.95)
+        p = pl.classificar_problemas(e, pl.DIVERGE, 300, ("123", "10"))
+        self.assertIn(pl.P_NUMERO_DIVERGE, p)
+        self.assertNotIn(pl.P_DIVERGE, p)
 
     def test_historico_grava_e_le_a_decisao_mais_recente(self):
         import tempfile
@@ -86,6 +112,29 @@ class TestProblemasEHistorico(unittest.TestCase):
                 self.assertEqual(len(h), 1)
                 self.assertEqual((h[0].decisao, h[0].leitura_final), ("Corrigido", "11"))
                 self.assertEqual(h[0].lista_problemas, [pl.P_DIVERGE])
+            finally:
+                pl.HISTORICO = antigo
+
+    def test_historico_com_cabecalho_antigo(self):
+        import tempfile
+        from pathlib import Path
+        antigo = pl.HISTORICO
+        cab_antigo = [c for c in pl.CAMPOS_HISTORICO if c != "prob_legivel"]
+        with tempfile.TemporaryDirectory() as d:
+            pl.HISTORICO = Path(d) / "h.csv"
+            try:
+                velha = dict.fromkeys(cab_antigo, "")
+                velha.update(analisado_em="2026-01-01 00:00:00", lote="l", arquivo="a.jpg", status=pl.DIVERGE,
+                             decisao="Corrigido", leitura_final="11", confianca="0.5", nitidez="100", motivo="m")
+                pl.HISTORICO.write_text(";".join(cab_antigo) + "\n" + ";".join(velha[c] for c in cab_antigo) + "\n",
+                                        encoding="utf-8-sig")
+                r = pl.Resultado("b.jpg", "b.jpg", 200, "1", "10", 0.95, "1", "10", pl.CONFERE, "ok", lote="l",
+                                 prob_legivel=0.9)
+                r.decisao = "Confirmado"; pl.registrar_decisao(r)
+                h = {x.arquivo: x for x in pl.carregar_historico()}
+                self.assertEqual((h["a.jpg"].decisao, h["a.jpg"].leitura_final, h["a.jpg"].motivo),
+                                 ("Corrigido", "11", "m"))
+                self.assertEqual((h["b.jpg"].decisao, h["b.jpg"].motivo), ("Confirmado", "ok"))
             finally:
                 pl.HISTORICO = antigo
 

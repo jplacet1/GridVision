@@ -36,6 +36,13 @@ MIN_DIGITOS_FORA_PLACA = 6   # número informado achado fora da placa só conta 
 # "geralmente a 03". Outros códigos podem ser acrescentados por GRIDVISION_FUNCOES_LEITURA="03,..."
 FUNCOES_LEITURA = {c.strip().zfill(2) for c in os.environ.get("GRIDVISION_FUNCOES_LEITURA", "03").split(",") if c.strip()}
 MIN_DIGITOS_COM_FUNCAO = 7   # "03" + leitura de 5 ou mais dígitos; abaixo disso não separa
+# Modelos do OCR por GRIDVISION_OCR. v6_medium é o padrão do PaddleOCR 3.7 (lang="en"), o dos experimentos.
+MODELOS_OCR = {
+    "v6_medium": {},
+    "v5_mobile": dict(text_detection_model_name="PP-OCRv5_mobile_det",
+                      text_recognition_model_name="en_PP-OCRv5_mobile_rec"),
+    "v6_det_v5_rec": dict(text_recognition_model_name="en_PP-OCRv5_mobile_rec"),
+}
 
 _detector = None
 _ocr = None
@@ -110,7 +117,8 @@ def _carregar():
         from paddleocr import PaddleOCR
         # enable_mkldnn=False: com o PaddlePaddle 3.3 em CPU, sem isso a inferência falha em silêncio
         _ocr = PaddleOCR(use_doc_orientation_classify=False, use_doc_unwarping=False,
-                         use_textline_orientation=False, lang="en", enable_mkldnn=False)
+                         use_textline_orientation=False, lang="en", enable_mkldnn=False,
+                         **MODELOS_OCR.get(os.environ.get("GRIDVISION_OCR", "v6_medium"), {}))
 
 
 def _digitos(s):
@@ -273,7 +281,8 @@ def extrair(caminho, informado=None):
     if not numero and na_placa:
         numero, conf_n = max(na_placa, key=lambda x: (len(x[0]), x[1]))
 
-    confianca = min(conf_l, conf_n) if leitura and numero else 0.0
+    # sem número, vale a confiança da leitura: leitura que confere vai ao analista já preenchida
+    confianca = min(conf_l, conf_n) if leitura and numero else conf_l if leitura else 0.0
     if p_leg >= 0:
         partes.append(f"chance de legível {p_leg:.0%}")
     return ResultadoExtracao(True, numero, leitura, round(confianca, 3), ", ".join(partes), round(p_leg, 3))
