@@ -53,6 +53,7 @@ Cronograma completo: `Cronograma_CRISP_DM_Projeto_4.pdf` na pasta do Drive. É o
 - [Drive](https://drive.google.com/drive/folders/1s2D1-MM3H-wqDQ6Sd0mfykE-Dz6VTJ3J)
 - [Repositório](https://github.com/jplacet1/GridVision)
 - [Experimento de OCR 1](https://claude.ai/artifact/5ebXfTqPCAmeJuMRWBxqPN) e [Piloto e detector v0](https://claude.ai/artifact/4bH2TJ3D2u9Ljiovfr6dEd) (artefatos do Claude com os resultados de 17 e 18/10; privados, compartilhar pelo Share)
+- [Pesos dos modelos](https://drive.google.com/drive/folders/1pY8Pf2UKYni9dTRk2MaTq2SFiIvcm9ru) (pasta "GridVision modelos" no Drive pessoal do João Pedro, criada em 24/10/2026, pedido do professor): uma subpasta por versão, nunca sobrescrever, com `MANIFESTO.txt` (SHA-256, dados de treino, métricas). Só pesos e métricas, nada de fotos
 - [Design system do GridVision](https://claude.ai/artifact/QE97oYdBevqSvzrTb9VWj5) (artefato do Claude; o Claude de qualquer integrante lê por esse link. Se não abrir, peça ao João Pedro para compartilhar)
 
 ## Dados (números da EDA apresentados no SR1)
@@ -124,7 +125,16 @@ Conferidos em 03/10/2026 contra o zip original (`Base de Dados Neoenergia PE.zip
 
 ### 24/10/2026
 
-- **O Confere automático exige leitura e número do medidor (decisão do grupo, 24/10/2026).** O sistema só dá "Confere" sozinho quando a leitura e o número do medidor lidos na foto batem com os do CSV. Assim ele prova também que a foto é do medidor certo (não do vizinho nem reaproveitada). Teto pela foto: os dois legíveis em 46% da amostra aleatória, contra 56% só da leitura. Casos de saída: se a leitura bate e o número está ilegível, a foto vai ao analista com a leitura preenchida (não vira "Ilegível"); se o número lido difere do CSV, vira "Diverge" e vai ao analista. Ainda não implementado no app: hoje o app exige o número legível, mas não o compara com o CSV.
+- **O Confere automático exige leitura e número do medidor (decisão do grupo, 24/10/2026).** O sistema só dá "Confere" sozinho quando a leitura e o número do medidor lidos na foto batem com os do CSV. Assim ele prova também que a foto é do medidor certo (não do vizinho nem reaproveitada). Teto pela foto: os dois legíveis em 46% da amostra aleatória, contra 56% só da leitura. Casos de saída: se a leitura bate e o número está ilegível, a foto vai ao analista com a leitura preenchida (não vira "Ilegível"); se o número lido difere do CSV, vira "Diverge" e vai ao analista. Implementado no app em 24/10/2026: status novo "Só a leitura confere" (número ilegível, leitura batendo; vai ao analista e não vira "Ilegível (certeza alta)") e problema "Número diferente do informado" no Diverge. Sem número, a confiança usada é a da leitura.
+- **Transcrição do visor com caixas de função e leitura (ideia do João Pedro, 24/10/2026).** Nos 500 recortes da transcrição manual (400 de treino e 100 de validação), o anotador marca também uma caixa na função (ex.: 03) e outra na leitura, além do texto. Objetivo: o leitor recebe só a leitura, sem confundir a função com os primeiros dígitos, e a função vira rótulo próprio para recusar fotos de outra tela. As caixas vêm pré-preenchidas pelas posições do OCR: só a leitura em 253 recortes, função e leitura em 126, nenhuma em 121. Kit em [../experiments/leitor_digitos/](../experiments/leitor_digitos/). A lista `transcricao_v1.csv` (nomes de foto) fica fora do Git porque o repositório é público; `preparar_transcricao.py` a gera.
+- **Atendimento de 24/10/2026 com o professor Erick Simões.** Resumo automático da reunião no Granola (link fora do repositório, que é público; pedir ao João Pedro). O resumo traz alguns números diferentes dos oficiais, por erro de fala ou de transcrição; valem os desta página: detector 0,917 na checagem e 0,942 em validação e teste, legibilidade com AUC de 0,926 (o resumo diz 0,96).
+  - **Apresentado:** cronograma atualizado (avanços, atrasos e cortes), resultados do modelo e app desktop com o modelo real. O professor elogiou a integração do front-end com a IA como avanço significativo.
+  - **Demo ao vivo no `lote_demo3`** (30 fotos da validação nunca usadas, seed 2410, 28 com registro no CSV; fora do Git): cerca de 5 min em CPU; 7 Confere automático, 20 para o analista, 3 excluídas (sem medidor ou ilegíveis com certeza alta). O app ainda usava a regra antiga (Confere só pela leitura). Os 7 Confere não foram conferidos à mão.
+  - **Sugestões de interface:** zoom e pan na foto da checagem; miniatura das fotos na lista de resultados; ícones de status além do texto (as cores já foram aprovadas); barra divisória arrastável entre a foto e o painel direito, com a posição salva entre sessões.
+  - **Aprendizado com as correções do analista:** avaliar atualização em tempo real contra retreino periódico com as correções. Consultar o professor Galindo (MLOps, aula de quarta) para definir a abordagem para este modelo.
+  - **Versionar os modelos salvos** (pesos), por exemplo numa pasta do Drive, para não perder progresso e ter liberdade de testar.
+  - **Mostrar o app ao professor Paulo** na aula de Empreendedorismo (sexta).
+  - Fala registrada no resumo: visores com função de data (ex.: "03", "24") contaminavam a leitura anterior. Reforça as caixas de função e leitura na transcrição.
 
 ## Ambiente local (fora do Git)
 
@@ -147,7 +157,7 @@ Duas disciplinas usam o Projeto 4 como objeto e podem originar decisões do proj
 
 | Disciplina | Entrega | Prazo | Liga com o projeto |
 |---|---|---|---|
-| MLOps (BD031) | AV1, entrega prática: serviço de inferência em BentoML (ou equivalente), repositório público no GitHub e apresentação | Repositório 06/10 23:59 (tag `sr1`); apresentação 07/10 às 19:00 | Servir a extração das fotos (endpoint recebe imagem e devolve número do medidor, função, consumo e confiança) |
+| MLOps (BD031), prof. Galindo, quarta | AV1, entrega prática: serviço de inferência em BentoML (ou equivalente), repositório público no GitHub e apresentação | Repositório 06/10 23:59 (tag `sr1`); apresentação 07/10 às 19:00 | Servir a extração das fotos (endpoint recebe imagem e devolve número do medidor, função, consumo e confiança) |
 | Deep Learning (BD019) | Lab 02, arquitetura profunda, por grupo | 08/10 23:59 (Marco 2 da disciplina em 29/10) | Arquitetura de rede, rotulagem de pelo menos 300 fotos (50 com dupla rotulagem, kappa de Cohen) e primeiro bloco treinado |
 
 Regras que valem para esses entregáveis:
@@ -161,7 +171,7 @@ Pendências e conflitos aparentes (não resolvidos, valem as decisões acima at�
 - **Bloco específico do Lab 02 sem dono.** O enunciado lista os grupos Korvian, Luminus, VoltLens e Nortdata e não cita GridVision. O grupo não é a Nortdata e ainda não validou com o professor de Deep Learning qual bloco (K, L, V ou N) responder. Até lá, só a parte comum (0,80) está definida. Enunciado, guia e esqueleto foram lidos em 04/10/2026 (arquivos baixados do Classroom).
 - **Baseline de 02/10.** Script e resultados recebidos em 05/10/2026 (ver seção Dados). Falta definir qual métrica do número do medidor é oficial (42% contido ou 38% igual).
 - **Saída do serviço de MLOps.** O enunciado pede número do medidor, função, consumo e confiança. O problema oficial do SR1 é número do medidor e leitura. Falta alinhar o que o endpoint devolve.
-- **Visibilidade do repositório GridVision.** Este repositório cita a Neoenergia em `docs/`. Se for público, não pode ser o repositório entregue em MLOps. Visibilidade não verificada.
+- **Visibilidade do repositório GridVision.** Este repositório cita a Neoenergia em `docs/`. Se for público, não pode ser o repositório entregue em MLOps. Visibilidade verificada em 30/10/2026: é público.
 - **Marco 2 de Deep Learning (29/10)** não consta na tabela de marcos do Projeto 4, que lista só Kick-off, SR1 e SR2.
 
 ## Pendências

@@ -14,7 +14,7 @@ Uso:  python app/main.py
 
 As fotos e o CSV ficam fora do Git (LGPD). A interface só lê da pasta local que o analista escolhe.
 """
-import queue, threading
+import json, math, queue, threading, time
 import tkinter as tk
 from tkinter import filedialog, font as tkfont
 
@@ -41,13 +41,38 @@ TEMA = ThemeDefinition(name="gridvision", themetype="dark", colors={
     "inputfg": COR["ink"], "inputbg": COR["surface-raised"], "active": "#1b2434",
 })
 # Cor de cada status na tabela e nos cartões (sempre junto da palavra, nunca só a cor)
-COR_STATUS = {pl.CONFERE: "ok", pl.DIVERGE: "danger", pl.LIDO: "action", pl.REVISAO: "warn",
+COR_STATUS = {pl.CONFERE: "ok", pl.DIVERGE: "danger", pl.SO_LEITURA: "action", pl.LIDO: "action", pl.REVISAO: "warn",
               pl.ILEGIVEL: "warn", pl.ILEGIVEL_CERTO: "ink-muted", pl.SEM_MEDIDOR: "ink-muted"}
 ETAPAS = ["Lote", "Processamento", "Resultados", "Revisão", "Exportação"]
 
 # Situação de cada foto no lote
 AUTOMATICA, REVISADA, EXCLUIDA, PENDENTE = "Automática", "Revisada", "Excluída", "Pendente"
 SITUACOES = [AUTOMATICA, REVISADA, EXCLUIDA, PENDENTE]
+
+# Preferências da interface (posição das divisórias), ao lado do histórico, fora do Git
+PREFERENCIAS = pl.HISTORICO.parent.parent / "interface.json"
+
+
+def ler_preferencias():
+    try:
+        return json.loads(PREFERENCIAS.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return {}
+
+
+def gravar_preferencias(prefs):
+    try:
+        PREFERENCIAS.parent.mkdir(parents=True, exist_ok=True)
+        PREFERENCIAS.write_text(json.dumps(prefs, indent=2), encoding="utf-8")
+    except OSError:
+        pass  # preferência perdida não pode atrapalhar a revisão
+
+
+def duracao(segundos):
+    """Segundos como m:ss, ou h:mm:ss a partir de uma hora."""
+    m, s = divmod(int(segundos), 60)
+    h, m = divmod(m, 60)
+    return f"{h}:{m:02d}:{s:02d}" if h else f"{m}:{s:02d}"
 
 
 def situacao(r):
@@ -65,7 +90,108 @@ def familia(preferidas, reserva="Segoe UI"):
     return next((f for f in preferidas if f in instaladas), reserva)
 
 
+class VisorFoto(tk.Canvas):
+    """Foto da revisão com zoom (roda do mouse, centrado no cursor), pan (arrastar) e duplo clique
+    para voltar a caber no quadro. Só a parte visível é redimensionada, para o zoom alto não pesar."""
+    ZOOM_MAX = 10  # vezes o tamanho que cabe no quadro
+
+    def __init__(self, pai, **kw):
+        super().__init__(pai, highlightthickness=0, bg=COR["surface-raised"], **kw)
+        self.img = None
+        self.escala = self.cabe = 1.0
+        self.ox = self.oy = 0.0       # posição do canto da foto no quadro
+        self._arrasto = None
+        self._tk = None
+        self.bind("<Configure>", self._redimensionou)
+        self.bind("<MouseWheel>", lambda e: self._zoom(1.25 if e.delta > 0 else 0.8, e.x, e.y))
+        self.bind("<Button-4>", lambda e: self._zoom(1.25, e.x, e.y))
+        self.bind("<Button-5>", lambda e: self._zoom(0.8, e.x, e.y))
+        self.bind("<ButtonPress-1>", self._pegar)
+        self.bind("<B1-Motion>", self._arrastar)
+        self.bind("<ButtonRelease-1>", lambda e: setattr(self, "_arrasto", None))
+        self.bind("<Double-Button-1>", lambda e: self.ajustar())
+
+    def carregar(self, caminho):
+        try:
+            img = Image.open(caminho)
+            img.load()
+            self.img = img
+        except OSError:
+            self.img = None
+        self.ajustar()
+
+    def ajustar(self):
+        w, h = self.winfo_width(), self.winfo_height()
+        self.delete("all")
+        if self.img is None:
+            self.create_text(w / 2, h / 2, text="Não foi possível abrir a foto", fill=COR["ink-muted"])
+            return
+        if w < 2 or h < 2:
+            return  # ainda sem tamanho; o <Configure> chama de novo
+        iw, ih = self.img.size
+        self.cabe = self.escala = min(w / iw, h / ih)
+        self.ox, self.oy = (w - iw * self.escala) / 2, (h - ih * self.escala) / 2
+        self._desenhar()
+
+    @property
+    def ampliada(self):
+        return self.escala > self.cabe * 1.001
+
+    def _redimensionou(self, ev):
+        if self.ampliada:
+            self._limitar()
+            self._desenhar()
+        else:
+            self.ajustar()
+
+    def _zoom(self, fator, x, y):
+        if self.img is None:
+            return
+        nova = min(max(self.escala * fator, self.cabe), self.cabe * self.ZOOM_MAX)
+        self.ox = x - (x - self.ox) * nova / self.escala
+        self.oy = y - (y - self.oy) * nova / self.escala
+        self.escala = nova
+        self._limitar()
+        self._desenhar()
+
+    def _pegar(self, ev):
+        self._arrasto = (ev.x, ev.y)
+
+    def _arrastar(self, ev):
+        if self._arrasto is None or not self.ampliada:
+            return
+        self.ox += ev.x - self._arrasto[0]
+        self.oy += ev.y - self._arrasto[1]
+        self._arrasto = (ev.x, ev.y)
+        self._limitar()
+        self._desenhar()
+
+    def _limitar(self):
+        """Não deixa a foto sair do quadro: centraliza o eixo que cabe, prende o que sobra."""
+        w, h = self.winfo_width(), self.winfo_height()
+        lw, lh = self.img.size[0] * self.escala, self.img.size[1] * self.escala
+        self.ox = (w - lw) / 2 if lw <= w else min(0, max(w - lw, self.ox))
+        self.oy = (h - lh) / 2 if lh <= h else min(0, max(h - lh, self.oy))
+
+    def _desenhar(self):
+        self.delete("all")
+        self.configure(cursor="fleur" if self.ampliada else "")
+        w, h, e = self.winfo_width(), self.winfo_height(), self.escala
+        iw, ih = self.img.size
+        x0, y0 = max(0, int(-self.ox / e)), max(0, int(-self.oy / e))
+        x1, y1 = min(iw, math.ceil((w - self.ox) / e)), min(ih, math.ceil((h - self.oy) / e))
+        if x1 <= x0 or y1 <= y0:
+            return
+        recorte = self.img.crop((x0, y0, x1, y1)).resize(
+            (max(1, round((x1 - x0) * e)), max(1, round((y1 - y0) * e))),
+            Image.Resampling.BILINEAR, reducing_gap=2.0)
+        self._tk = ImageTk.PhotoImage(recorte)
+        self.create_image(self.ox + x0 * e, self.oy + y0 * e, image=self._tk, anchor=NW)
+
+
 class App(ttk.Window):
+    MIN_FOTO = 280  # largura mínima do quadro da foto na revisão
+
     def __init__(self):
         super().__init__(title="GridVision", size=(1240, 800), minsize=(1040, 660))
         self.style.register_theme(TEMA)
@@ -76,12 +202,16 @@ class App(ttk.Window):
         self.style.configure(".", font=(self.f_sans, 10))
         self.style.configure("Treeview", rowheight=26, font=(self.f_mono, 10))
         self.style.configure("Treeview.Heading", font=(self.f_sans, 9, "bold"))
+        # divisória arrastável: o fundo do Panedwindow aparece só na faixa entre os painéis
+        self.style.configure("TPanedwindow", background=COR["border"])
+        self.prefs = ler_preferencias()
 
         self.pasta = tk.StringVar()
         self.csv = tk.StringVar()
         self.resultados = []
         self.total_lote = 0
         self.processando = False
+        self.t_inicio = self.t_ultima = self.t_fim = None  # relógio do lote (time.monotonic)
         self.atual = None              # foto aberta no painel de revisão
         self.origem_revisao = "Revisão"
         self.tela_atual = None
@@ -279,6 +409,8 @@ class App(ttk.Window):
         self.progresso.pack(fill=X, pady=(0, 8))
         self.txt_progresso = ttk.Label(t, text="", font=(self.f_mono, 10))
         self.txt_progresso.pack(anchor=W)
+        self.txt_tempo = ttk.Label(t, text="", font=(self.f_mono, 10))
+        self.txt_tempo.pack(anchor=W, pady=(4, 0))
         self.txt_atual = ttk.Label(t, text="", foreground=COR["ink-muted"], font=(self.f_mono, 9))
         self.txt_atual.pack(anchor=W, pady=(4, 12))
         self.cartoes_proc = ttk.Frame(t)
@@ -304,6 +436,7 @@ class App(ttk.Window):
                                            foreground=COR["ink-muted"])
         self.progresso.configure(maximum=max(self.total_lote, 1), value=n)
         self.txt_progresso.configure(text=f"{n} de {self.total_lote} fotos" if self.total_lote else "")
+        self._atualizar_tempo()
         if self.processando:
             self.bt_cancelar.state(["!disabled"])
         else:
@@ -315,6 +448,27 @@ class App(ttk.Window):
                                           ("Pendentes", str(cont[PENDENTE]), "warn"),
                                           ("Excluídas (sem medidor ou ilegível)", str(cont[EXCLUIDA]), "ink-muted"),
                                           ("Revisadas", str(cont[REVISADA]), "action")])
+
+    def _atualizar_tempo(self):
+        """Tempo decorrido e estimativa do que falta (média por foto já processada)."""
+        if self.t_inicio is None:
+            self.txt_tempo.configure(text="")
+            return
+        agora = time.monotonic()
+        n = len(self.resultados)
+        if not self.processando:
+            fim = self.t_fim or agora
+            media = f"  ·  {(fim - self.t_inicio) / n:.1f} s por foto" if n else ""
+            self.txt_tempo.configure(text=f"Duração {duracao(fim - self.t_inicio)}{media}")
+            return
+        texto = f"Decorrido {duracao(agora - self.t_inicio)}"
+        if n:
+            media = (self.t_ultima - self.t_inicio) / n
+            falta = max(0.0, media * (self.total_lote - n) - (agora - self.t_ultima))
+            texto += f"  ·  faltam cerca de {duracao(falta)}  ·  {media:.1f} s por foto"
+        else:
+            texto += "  ·  estimando o tempo restante…"
+        self.txt_tempo.configure(text=texto)
 
     def iniciar(self):
         if self.processando:
@@ -336,6 +490,8 @@ class App(ttk.Window):
         self.resultados, self.atual = [], None
         self.total_lote, self.processando = len(fotos), True
         self._cancelar.clear()
+        self.t_inicio = self.t_ultima = time.monotonic()
+        self.t_fim = None
         self.ir("Processamento")
         threading.Thread(target=self._trabalhar, args=(fotos, informado), daemon=True).start()
         self.after(50, self._acompanhar)
@@ -362,15 +518,19 @@ class App(ttk.Window):
                     self.txt_atual.configure(text=f"lendo {msg[1]}")
                 elif msg[0] == "item":
                     self.resultados.append(msg[1])
+                    self.t_ultima = time.monotonic()
                     novos = True
                 else:  # fim
                     self.processando = False
+                    self.t_fim = time.monotonic()
                     self._ao_mudar()
                     return
         except queue.Empty:
             pass
         if novos:
             self._ao_mudar()
+        elif self.tela_atual == "Processamento":
+            self._atualizar_tempo()  # relógio anda entre uma foto e outra
         self.after(100, self._acompanhar)
 
     def _ao_mudar(self):
@@ -443,13 +603,16 @@ class App(ttk.Window):
         self.txt_fila = ttk.Label(topo, text="", font=(self.f_mono, 10), foreground=COR["ink-muted"])
         self.txt_fila.pack(side=RIGHT)
 
-        corpo = ttk.Frame(t)
-        corpo.pack(fill=BOTH, expand=YES, pady=(10, 0))
+        # fila | foto | campos, com divisórias arrastáveis (posição salva entre sessões)
+        self.divisor_fila = ttk.Panedwindow(t, orient=HORIZONTAL)
+        self.divisor_fila.pack(fill=BOTH, expand=YES, pady=(10, 0))
 
         # fila de pendentes, à esquerda
-        esq = ttk.Frame(corpo, width=330)
-        esq.pack(side=LEFT, fill=Y)
+        esq = ttk.Frame(self.divisor_fila, width=330, padding=(0, 0, 8, 0))
         esq.pack_propagate(False)
+        direita = ttk.Frame(self.divisor_fila)
+        self.divisor_fila.add(esq, weight=0)
+        self.divisor_fila.add(direita, weight=1)
         f = ttk.Frame(esq)
         f.pack(fill=X, pady=(0, 6))
         ttk.Label(f, text="PROBLEMA", font=(self.f_sans, 9, "bold"), foreground=COR["ink-muted"]).pack(side=LEFT)
@@ -474,15 +637,26 @@ class App(ttk.Window):
         self.fila_tv.bind("<<TreeviewSelect>>", self._selecionar_na_fila)
 
         # painel da foto, à direita
-        self.painel = ttk.Frame(corpo, padding=(20, 0, 0, 0))
+        self.painel = ttk.Panedwindow(direita, orient=HORIZONTAL)
         self.painel.pack(side=LEFT, fill=BOTH, expand=YES)
-        self.vazio = ttk.Label(corpo, text="", foreground=COR["ink-muted"], font=(self.f_sans, 11),
+        self.vazio = ttk.Label(direita, text="", foreground=COR["ink-muted"], font=(self.f_sans, 11),
                                wraplength=600, justify=LEFT, padding=(20, 20))
 
-        self.foto = ttk.Label(self.painel, background=COR["surface-raised"], anchor=CENTER)
-        self.foto.pack(side=LEFT, fill=Y)
-        lado = ttk.Frame(self.painel, padding=(20, 0, 0, 0))
-        lado.pack(side=LEFT, fill=BOTH, expand=YES)
+        quadro_foto = ttk.Frame(self.painel, padding=(8, 0))
+        ttk.Label(quadro_foto, text="Roda do mouse: zoom  ·  arrastar: mover  ·  duplo clique: ajustar",
+                  foreground=COR["ink-muted"], font=(self.f_sans, 8)).pack(side=BOTTOM, anchor=W, pady=(4, 0))
+        self.foto = VisorFoto(quadro_foto, width=420, height=540)
+        self.foto.pack(fill=BOTH, expand=YES)
+        lado = ttk.Frame(self.painel, padding=(16, 0, 0, 0))
+        self.painel.add(quadro_foto, weight=1)
+        self.painel.add(lado, weight=0)
+        self.divisorias = [(self.divisor_fila, "divisoria_fila"), (self.painel, "divisoria_foto")]
+        for pw, chave in self.divisorias:
+            # o widget recebe o evento antes da classe mover a divisória; o limite vem logo depois
+            pw.bind("<B1-Motion>", lambda e, pw=pw: self.after_idle(self._limitar_divisoria, pw), add="+")
+            pw.bind("<Configure>", lambda e, pw=pw: self.after_idle(self._limitar_divisoria, pw), add="+")
+            pw.bind("<ButtonRelease-1>", lambda e, pw=pw, c=chave: self._gravar_divisoria(pw, c), add="+")
+            pw.bind("<Map>", lambda e: self.after_idle(self._restaurar_divisorias), add="+")
         self.txt_arquivo = ttk.Label(lado, font=(self.f_mono, 9), foreground=COR["ink-muted"], wraplength=380)
         self.txt_arquivo.pack(anchor=W)
         self.txt_status = ttk.Label(lado, font=(self.f_display, 14, "bold"))
@@ -495,15 +669,17 @@ class App(ttk.Window):
         form = ttk.Frame(lado)
         form.pack(fill=X)
         self.v_numero, self.v_leitura = tk.StringVar(), tk.StringVar()
-        self.v_num_inf, self.v_leit_inf, self.v_conf = tk.StringVar(), tk.StringVar(), tk.StringVar()
+        self.v_num_inf, self.v_leit_inf = tk.StringVar(), tk.StringVar()
+        self.v_conf, self.v_nitidez, self.v_legivel = tk.StringVar(), tk.StringVar(), tk.StringVar()
         linhas = [("Nº do medidor", self.v_numero, True), ("Leitura", self.v_leitura, True),
                   ("Nº informado", self.v_num_inf, False), ("Leitura informada", self.v_leit_inf, False),
-                  ("Confiança · nitidez · legível", self.v_conf, False)]
+                  ("Confiança", self.v_conf, False), ("Nitidez", self.v_nitidez, False),
+                  ("Legível", self.v_legivel, False)]
         for i, (rot, var, editavel) in enumerate(linhas):
             ttk.Label(form, text=rot.upper(), font=(self.f_sans, 9, "bold"),
                       foreground=COR["ink-muted"]).grid(row=i, column=0, sticky=W, pady=5, padx=(0, 16))
             if editavel:
-                e = ttk.Entry(form, textvariable=var, font=(self.f_mono, 12))
+                e = ttk.Entry(form, textvariable=var, font=(self.f_mono, 12), width=14)
                 e.grid(row=i, column=1, sticky=EW, pady=5)
                 if i == 1:
                     self.campo_leitura = e
@@ -514,6 +690,12 @@ class App(ttk.Window):
 
         acoes = ttk.Frame(lado)
         acoes.pack(fill=X, pady=(16, 0))
+        # larguras mínimas de cada lado das divisórias, medidas na fonte instalada
+        sash = 8
+        min_fila = lambda: f.winfo_reqwidth() + 8
+        min_lado = lambda: max(form.winfo_reqwidth(), acoes.winfo_reqwidth()) + 16 + 8
+        self.minimos = {self.divisor_fila: (min_fila, lambda: self.MIN_FOTO + sash + min_lado()),
+                        self.painel: (lambda: self.MIN_FOTO, min_lado)}
         ttk.Button(acoes, text="Confirmar (Enter)", bootstyle=SUCCESS,
                    command=lambda: self._decidir("Confirmado")).pack(side=LEFT)
         ttk.Button(acoes, text="Ilegível", bootstyle=(WARNING, OUTLINE),
@@ -522,10 +704,38 @@ class App(ttk.Window):
                    command=self._pular).pack(side=LEFT)
         self.bt_voltar = ttk.Button(acoes, text="Voltar", bootstyle=(SECONDARY, LINK),
                                     command=lambda: self.ir(self.origem_revisao))
-        ttk.Label(lado, text="Se editar o número ou a leitura, a decisão fica como Corrigido. "
-                             "Cada decisão é gravada no Histórico.",
-                  foreground=COR["ink-muted"], font=(self.f_sans, 9), wraplength=380,
-                  justify=LEFT).pack(anchor=W, pady=(14, 0))
+        ajuda = ttk.Label(lado, text="Se editar o número ou a leitura, a decisão fica como Corrigido. "
+                                     "Cada decisão é gravada no Histórico.",
+                          foreground=COR["ink-muted"], font=(self.f_sans, 9), wraplength=380, justify=LEFT)
+        ajuda.pack(anchor=W, pady=(14, 0))
+        # textos quebram na largura do painel, que muda com a divisória
+        quebram = [self.txt_arquivo, self.txt_problemas, self.txt_motivo, ajuda]
+        lado.bind("<Configure>", lambda e: [lb.configure(wraplength=max(160, e.width - 24)) for lb in quebram])
+
+    def _gravar_divisoria(self, pw, chave):
+        self._limitar_divisoria(pw)
+        try:
+            self.prefs[chave] = pw.sashpos(0)
+        except tk.TclError:
+            return
+        gravar_preferencias(self.prefs)
+
+    def _limitar_divisoria(self, pw, pos=None):
+        """Põe a divisória onde pedido (ou onde está), respeitando o mínimo de cada lado."""
+        if not pw.winfo_ismapped() or pw.winfo_width() <= 1:
+            return
+        esq, dir_ = (m() for m in self.minimos[pw])
+        atual = pw.sashpos(0)
+        novo = min(max(atual if pos is None else pos, esq), pw.winfo_width() - dir_)
+        if novo != atual:
+            pw.sashpos(0, max(novo, 0))
+
+    def _restaurar_divisorias(self):
+        """Da fila para a foto: mover a da fila muda a largura do painel da foto."""
+        for pw, chave in self.divisorias:
+            pos = self.prefs.get(chave)
+            self._limitar_divisoria(pw, pos if isinstance(pos, int) else None)
+            pw.update_idletasks()
 
     def _pendentes(self):
         prob = self.v_prob.get()
@@ -599,16 +809,12 @@ class App(ttk.Window):
         self.v_leitura.set(r.leitura_final or r.leitura_lida)
         self.v_num_inf.set(r.numero_informado or "-")
         self.v_leit_inf.set(r.leitura_informada or "-")
-        leg = f"  ·  legível {r.prob_legivel:.0%}" if r.prob_legivel >= 0 else ""
-        self.v_conf.set(f"{r.confianca:.2f}  ·  nitidez {r.nitidez:.0f}{leg}")
-        try:
-            img = Image.open(r.caminho)
-            img.thumbnail((400, 540))
-            self._img = ImageTk.PhotoImage(img)
-            self.foto.configure(image=self._img, text="")
-        except OSError:
-            self._img = None
-            self.foto.configure(image="", text="Não foi possível abrir a foto", width=40)
+        self.v_conf.set(f"{r.confianca:.2f}")
+        self.v_nitidez.set(f"{r.nitidez:.0f}")
+        self.v_legivel.set(f"{r.prob_legivel:.0%}" if r.prob_legivel >= 0 else "-")
+        if r is not getattr(self, "_foto_aberta", None):  # reabrir a mesma foto não perde o zoom
+            self._foto_aberta = r
+            self.foto.carregar(r.caminho)
         self.campo_leitura.focus_set()
         self.campo_leitura.select_range(0, END)
 
