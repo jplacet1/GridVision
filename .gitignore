@@ -1,0 +1,36 @@
+# Dados da Neoenergia: dados pessoais (LGPD), nunca versionar
+data/
+dados/
+Base de Dados*/
+*.zip
+*.csv
+*.xlsx
+*.jpg
+*.jpeg
+
+# Pesos e artefatos de treino (versionar com DVC, se for o caso)
+*.pt
+*.pth
+*.ckpt
+*.onnx
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+.ipynb_checkpoints/
+
+# Ambiente local
+.claude/*
+!.claude/skills/
+*.code-workspace
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Listas de arquivos (só nomes, sem dados) podem ser versionadas
+!experiments/piloto_anotacao/*.csv
+!experiments/detector_v0/*.csv
+!experiments/avaliacao_detector/*.csv

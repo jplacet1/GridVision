@@ -113,7 +113,7 @@ Resultado "Aprovado, Reprovado ou Revisão manual, com motivo" segue DEF e KO. O
 
 ### 13. Perguntas do cliente ainda sem resposta (D1 a D5, BU)
 
-Nenhum documento registra resposta do cliente para: critério formal de foto por nota (D1), amostra auditada (D2), resolução original (D3), percentual auditado hoje (D4), restrição de LGPD (D5). BU também lista em aberto o tempo médio atual, tipos de medidores mais frequentes, precisão aceitável e o que fica sempre humano. SR1 repete "qual taxa de acerto o cliente aceita".
+D1 a D5 esclarecidos em 17/10/2026 (ver `contexto.md`, seção Projeto). Seguem em aberto as perguntas da BU: em aberto o tempo médio atual, tipos de medidores mais frequentes, precisão aceitável e o que fica sempre humano. SR1 repete "qual taxa de acerto o cliente aceita".
 
 ### 14. Detalhes de ordem das verificações
 
@@ -132,13 +132,18 @@ A pasta Apresentações tem "Copy of GridVision SR1.pdf" e "Copy of GridVision_K
 - Marcos 12/09, 03/10 e 05/12 (CRO, `contexto.md`). Links do Site, Notion e Drive (Links Úteis, `contexto.md`).
 - Metas de revocação 0,85, precisão 0,70 e 10 minutos para 3.500 fotos (DEF, S29).
 
+## 16. Meta acima do teto de legibilidade (18/10/2026)
+
+A meta é resolver 50% das leituras sem analista, com erro zero. Medido em 200 fotos aleatórias de validação e teste: só 46% permitem ler leitura e número do medidor, e 56% só a leitura. Mesmo um modelo perfeito não chega a 50% se precisar das duas coisas. Ver `contexto.md`, 17 e 18/10.
+
 ## Pendências
 
 | Item | O que falta | Responsável sugerido |
 |---|---|---|
-| 2 | Dizer se o teste de legibilidade dos dígitos em recortes foi feito e qual o resultado | Henrique |
-| 5 | Confirmar com a Neoenergia se o volume mensal é de leituras ou de imagens, se a faixa é 50 a 70 mil ou 70 mil, e se a foto só existe quando a leitura está fora da faixa esperada (BU) ou em toda visita (Kickoff) | Grupo, na próxima conversa com o cliente |
-| 13 | Perguntas D1 a D5 da Ideação (critério formal de foto, amostra auditada, resolução original, percentual auditado hoje, LGPD) e as da BU (tempo médio de análise, tipos de medidor mais frequentes, precisão aceitável, o que fica sempre humano). A resposta "50% é válido" cobre só parte da pergunta de precisão aceitável | Grupo, com a Neoenergia |
+| 13 | Perguntas da BU (tempo médio de análise, tipos de medidor mais frequentes, precisão aceitável, o que fica sempre humano). D1 a D5, volume e gatilho da foto foram esclarecidos pelo grupo em 17/10/2026 | Grupo, com a Neoenergia |
 | 15 | Escolher a versão oficial do Kickoff e do SR1 e apagar as cópias em Apresentações ("Copy of ...") | Grupo |
 | Metas | Definir valor-alvo para localização, acerto exato da leitura e segurança, e validar com a Neoenergia | Grupo, antes do SR2 |
+| 16 | Meta de 50% sem analista contra o teto medido de 46% (leitura e número legíveis juntos) ou 56% (só leitura). Decidir se a meta passa a valer sobre as fotos legíveis ou se o sistema confere só a leitura | Grupo, levar ao professor em 24/10 |
+| 17 | Termo "ACR" nas notas do atendimento de 17/10 (condição para a disciplina ser considerada entregue). Provável erro de fala ou transcrição | Grupo, confirmar com o professor |
+| 18 | Códigos de função de consumo do display além do 03 (o grupo disse "geralmente a 03") | Grupo |
 | Data Understanding | Completar o documento do Drive (coluna de imagens vazia, EDA do SR1 fora dele) | João Pedro |

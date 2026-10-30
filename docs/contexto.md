@@ -2,6 +2,8 @@
 
 Fonte única de verdade do GridVision. Se algo mudar, atualize este arquivo no mesmo commit.
 
+Como usar este repositório como workspace (Claude Code, dados fora do Git, branches e PRs): [guia-do-grupo.md](guia-do-grupo.md).
+
 Os documentos do Drive estão resumidos em [fontes/](fontes/). Conflitos entre eles e o que ainda está pendente estão em [inconsistencias.md](inconsistencias.md). Em caso de divergência, vale este arquivo.
 
 ## Projeto
@@ -11,7 +13,17 @@ Os documentos do Drive estão resumidos em [fontes/](fontes/). Conflitos entre e
 - Parceiro: Neoenergia Pernambuco
 - Objetivo: diminuir o trabalho manual dos analistas da Neoenergia automatizando parte da leitura dos medidores a partir das fotos de campo
 - Problema técnico: extrair das fotos de medidores o número do medidor e a leitura. Se a leitura informada pelo leiturista vier junto com a foto, comparar as duas (confere ou diverge). Se não vier, devolver o valor lido ao analista. Casos incertos vão para revisão manual.
-- Volume atual: 50 mil a 70 mil leituras por mês (faixa do Google Site), a maioria manual, com equipe de seis pessoas. A Business Understanding fala em 70 mil imagens por mês. A unidade (leitura ou imagem) está pendente.
+- Volume atual: 50 mil a 70 mil leituras por mês (faixa do Google Site), a maioria manual, com equipe de seis pessoas. A Business Understanding fala em 70 mil imagens por mês. Esclarecido em 17/10/2026: são 70 mil leituras por mês (item abaixo).
+- Volume, gatilho da foto e D1 a D5, informados e confirmados pelo João Pedro em 17/10/2026 a partir do que o grupo sabe do processo (não houve nova consulta à Neoenergia):
+  - A Neoenergia tem cerca de 4 milhões de clientes no total. Só as leituras que dão alguma inconsistência ou disparam alerta do sistema vão para os analistas: **70 mil leituras por mês**. Os analistas verificam todas as 70 mil, para a conta chegar correta ao cliente.
+  - O leiturista fotografa em toda visita, normalmente (não só quando a leitura está fora da faixa).
+  - Cobrir 50% das leituras que chegam aos analistas já seria um bom avanço.
+  - D1: não existe manual ou critério formal de foto válida por nota (nada foi recebido).
+  - D2: a amostra auditada é a própria base recebida (`Base de Dados Neoenergia PE.zip`). Número do medidor e leitura do CSV servem como rótulo de referência, com a ressalva da EDA: 14,2% das leituras têm 1 a 3 dígitos e 347 são zero. Ressalva descoberta pelo João Pedro em 17/10/2026: fotos com o número do medidor ilegível também têm o número preenchido no CSV, ou seja, o número não é tirado da foto (provavelmente vem do cadastro). O CSV não diz o que está visível. Consequências: a anotação do piloto precisa marcar, por foto, se o número e a leitura estão legíveis, e só os legíveis viram exemplo de treino do OCR; o acerto do baseline (medido contra o CSV) pode estar subestimado; "ilegível" é uma saída do sistema e vai ao analista. Em aberto: se a leitura do CSV é a digitada pelo leiturista ou a corrigida pelo analista.
+  - D3: a resolução original é a da base, 360 x 480 px. Não há versão maior.
+  - D5: sim, há restrição de LGPD (dados reais). Confirma a regra de dados fora do Git.
+  - Meta de 50%: significa 50% das 70 mil leituras mensais resolvidas sem analista (17/10/2026).
+  - Erro tolerado: nenhum nas leituras que o sistema resolve sozinho. Motivo: cobrança indevida gera dano de reputação e processos. Consequência para o projeto: o sistema só decide quando tiver certeza e manda o resto ao analista; a métrica de segurança (erro entre as leituras resolvidas automaticamente) precisa ficar em zero ou o mais perto possível, e a cobertura (percentual resolvido sem analista) é o que se tenta levar a 50% ou mais. Premissa do grupo em 17/10/2026, não validada por escrito com a Neoenergia.
 - Metodologia: CRISP-DM
 
 ## Grupo 4: GridVision
@@ -30,6 +42,8 @@ Documentos que exigem nome completo usam o nome completo. Nos demais, usar a for
 | SR1 | 03/10/2026 (realizado) |
 | SR2 (entrega final) | 05/12/2026 |
 
+Atendimentos do Grupo 4 (sábados, fonte: PDF de atendimentos na pasta Utilitários do Drive): 17/10 10:30 a 11:15; 24/10 9:45 a 10:30; 07/11 9:00 a 9:45; 14/11 12:15 a 13:00; 21/11 11:30 a 12:15; 28/11 10:30 a 11:15. SR2 em 05/12 com chegada às 9:00 e ordem por sorteio. Lista completa em [fontes/notion.md](fontes/notion.md).
+
 Cronograma completo: `Cronograma_CRISP_DM_Projeto_4.pdf` na pasta do Drive. É o cronograma oficial. As datas de entregáveis da Definição da Solução (05/09, 26/09, 24/10, 14/11, 21/11, 28/11) pertenciam ao desenho antigo e não valem mais.
 
 ## Links
@@ -38,6 +52,8 @@ Cronograma completo: `Cronograma_CRISP_DM_Projeto_4.pdf` na pasta do Drive. É o
 - [Notion](https://app.notion.com/p/GridVision-3c10a1e8539280048ea3ec14161c1709)
 - [Drive](https://drive.google.com/drive/folders/1s2D1-MM3H-wqDQ6Sd0mfykE-Dz6VTJ3J)
 - [Repositório](https://github.com/jplacet1/GridVision)
+- [Experimento de OCR 1](https://claude.ai/artifact/5ebXfTqPCAmeJuMRWBxqPN) e [Piloto e detector v0](https://claude.ai/artifact/4bH2TJ3D2u9Ljiovfr6dEd) (artefatos do Claude com os resultados de 17 e 18/10; privados, compartilhar pelo Share)
+- [Design system do GridVision](https://claude.ai/artifact/QE97oYdBevqSvzrTb9VWj5) (artefato do Claude; o Claude de qualquer integrante lê por esse link. Se não abrir, peça ao João Pedro para compartilhar)
 
 ## Dados (números da EDA apresentados no SR1)
 
@@ -49,6 +65,8 @@ Conferidos em 03/10/2026 contra o zip original (`Base de Dados Neoenergia PE.zip
 - 13.669 registros nos CSVs e 12.340 fotos JPG, em 4 lotes: 20, 21 e 22/05 e 03/07/2026 (conferido).
 - Todas as fotos têm 360 x 480 px e nenhuma tem EXIF.
 - 866 fotos (7,0%) sem registro no CSV. 296 registros sem foto onde a nota exige foto.
+- Fotos sem registro no CSV, conferido em 17/10/2026 só pelos nomes de arquivo: cada foto tem um código de 20 dígitos único (12.340 códigos, nenhum repetido entre lotes) e nenhuma das 866 órfãs tem outra foto do mesmo código no CSV, então a hipótese de "foto refeita" (`_000` ruim, `_001` aceita) não se confirma. O sufixo pesa: fotos `_000` ficam fora do CSV em 4,4% dos casos (515 de 11.817), `_001` em 64% (277 de 435), `_002` em 76% (38 de 50) e de `_003` a `_008` em 36 de 38. As órfãs se distribuem nos quatro lotes (208, 219, 242 e 197). O significado do sufixo é desconhecido.
+- Observação do João Pedro em 17/10/2026, sem contagem: há fotos sem medidor visível com leitura preenchida no CSV, e fotos com medidor ilegível que nem constam no CSV. Reforça que o CSV registra o informado, não o que aparece na foto.
 - 1.316 registros com mais de um medidor ("/") e 768 com letras no número do medidor.
 - O CSV traz número do medidor e leitura em 100% dos registros, mas 14,2% das leituras têm 1 a 3 dígitos e 347 são zero.
 - Amostra aleatória de 1.200 fotos: 31,8% abaixo do limiar de nitidez (variância do Laplaciano menor que 100), 2,1% subexpostas (brilho médio menor que 40), 2,0% com baixo contraste (desvio-padrão menor que 20).
@@ -56,8 +74,14 @@ Conferidos em 03/10/2026 contra o zip original (`Base de Dados Neoenergia PE.zip
 - Entre registros cuja nota não exige foto, 92,0% têm foto anexada (611 registros). Entre os que exigem foto, 92,5% têm (3.943 registros, dos quais 296 sem foto). Este é o "92%" da Ideação; a versão do slide de 29/08 ("92% das fotos anexadas são de notas que não exigem foto") está errada (o valor real é 4,9%).
 - 12 medidores aparecem em mais de um lote (conferido).
 - Nenhuma foto tem caixa ou texto anotado.
+- Leituras do CSV nunca têm zero à esquerda (nenhuma das 13.669, fora o próprio "0" em 347), enquanto o display mostra (ex.: 007237). O número do medidor pode começar com 0 (32 de 15.318) e o zero faz parte dele. Conferido em 18/10/2026.
 - Os CSVs usam o texto "NA" no lugar de campo vazio. Ler com `keep_default_na=False`.
-- Baseline de 02/10/2026: PaddleOCR na foto inteira, sem recorte e sem treino, 100 fotos nítidas. Acerto de 42% no número do medidor (placa) e 20% na leitura (display).
+- Baseline de 02/10/2026: PaddleOCR (PP-OCRv5, `en`, CPU) na foto inteira, sem recorte e sem treino, em 100 fotos nítidas (seed 1, nitidez >= 100, sorteadas entre 765 elegíveis). Script em [../experiments/baseline_ocr/](../experiments/baseline_ocr/), reavaliado em 05/10/2026 a partir dos arquivos do Henrique, com resultado idêntico ao entregue:
+  - Leitura (display): 20% ignorando zeros à esquerda (o display mostra `042884`, o CSV tem `42884`); só 3% com igualdade estrita. 8% erram por exatamente 1 dígito.
+  - Número do medidor (placa): **42%** se o número aparece contido no texto concatenado; **38%** se algum texto é igual ao número. O 42% do SR1 é a métrica mais branda. Falta o grupo escolher qual é a oficial; até lá citar as duas.
+  - 16% das fotos nítidas não tiveram nenhum texto detectado.
+  - É o melhor caso (só fotos nítidas, um único OCR, sem recorte). Não testa foto desfocada ou escura.
+  - Fotos, amostra e saída bruta do baseline ficam fora do Git (LGPD).
 
 ## Decisões e definições
 
@@ -69,7 +93,71 @@ Conferidos em 03/10/2026 contra o zip original (`Base de Dados Neoenergia PE.zip
 - **Arquitetura ainda não escolhida.** O SR1 propõe detector (medidor, ID e visor) mais reconhecedor de caracteres. A escolha final depende dos próximos testes (OCR nos recortes do visor) e deve estar fechada no SR2.
 - **Divisão dos dados.** Treino, validação e teste divididos por medidor, não por linha (70/15/15 nos três lotes de maio). Lote de 03/07 reservado como teste temporal.
 - **Dados ficam fora do Git.** Imagens e CSV da Neoenergia contêm dados pessoais (LGPD) e não estão no repositório nem no Drive do projeto. Código que dependa deles precisa de uma pasta local fora do Git, indicada por quem tem os dados. Só código, listas de arquivos e resultados agregados entram no repositório.
-- **Teste de legibilidade dos dígitos (previsto para 19/09).** Em aberto. Se foi feito, foi pelo Henrique. O único resultado registrado é o baseline de 02/10.
+- **Teste de legibilidade dos dígitos (previsto para 19/09).** Confirmado pelo João Pedro em 05/10/2026: é o mesmo teste do baseline de 02/10 (PaddleOCR na foto inteira, 100 fotos nítidas). Resultado na seção Dados.
+
+- **Identidade visual.** O GridVision tem design system (cores, tipografia, espaçamento, logos), feito em 03/10/2026 e guardado no artefato linkado em Links. Apresentações, plataforma e artefatos feitos com o Claude partem dele: ler o `README.md` do artefato antes de criar qualquer material visual. Direção: base neutra (a preferência do grupo nas apresentações) com o gradiente azul-verde da mark só como acento. O logotipo completo só funciona sobre fundo escuro ("GRID" é quase branco). Falta a versão para fundo claro, a tagline da capa é provisória e a escolha das fontes (Oxanium, IBM Plex Sans e Mono) é sugestão ainda não validada pelo grupo.
+
+- **Sem acesso direto à Neoenergia.** O grupo trabalha com o que a CESAR repassa. Perguntas e validações do cliente (volume, gatilho da foto, precisão aceitável, metas) vão pela CESAR, a começar pelo professor Erick, e a resposta pode não vir. O que não for respondido segue como suposição do grupo, registrada como não validada.
+- **Resposta padrão para "qual o próximo passo".** Sai de [proximo-passo.md](proximo-passo.md): data de hoje comparada com a fase do cronograma e com uma checklist ordenada, em formato fixo. Quem concluir um item marca como `feito` lá no mesmo commit.
+
+### 17 e 18/10/2026
+
+- **Feedback do SR1.** O professor Erick gostou do SR1 no geral. Não houve outro ponto registrado (o feedback foi dado antes da gravação do atendimento).
+- **Experimento de OCR 1 (pré-processamento).** Nas 100 fotos do baseline, com PaddleOCR 3.7: ampliar a foto 2x levou a leitura correta (ignorando zeros à esquerda) de 20 para 28 e o número do medidor (igual ao texto) de 38 para 41. No teste pareado, o ganho na leitura não é acaso (p = 0,02); no número do medidor ainda pode ser (p = 0,38). O CLAHE ajuda no PaddleOCR 2.10 mas atrapalha no 3.7. Recortar com o detector de texto genérico piora. **Nova referência: PaddleOCR 3.7 com a foto ampliada 2x (28% na leitura, 41% no número do medidor).** Correção de 18/10: essa rodada usou os modelos PP-OCRv6 medium (o baseline usou PP-OCRv5). Com o v6 sem ampliar, a leitura fica em 20, igual ao baseline, e o número do medidor em 40: o ganho na leitura vem da ampliação (pareado, mesmo modelo: 9 contra 1, p = 0,02); no número, quase todo do modelo. Scripts, resultados completos e ambiente em [../experiments/ocr_preprocessamento/](../experiments/ocr_preprocessamento/).
+- **Documentar o ambiente de execução** dos experimentos junto dos resultados (pedido do professor). O hardware do cliente é desconhecido; por ora, abstrair.
+- **Interface gráfica é obrigatória.** O usuário final não é técnico e hoje usa planilha. Desktop ou web está em aberto: João Pedro citou TKinter com Docker em intranet ou subdomínio, Henrique prefere web (Streamlit), o professor sugeriu TTK Bootstrap ou PySimpleGUI como desktop mais apresentável. Decisão no atendimento de 24/10.
+- **Pauta de 24/10:** cronograma atualizado (avanços, atrasos e cortes de escopo) e proposta de arquitetura do front-end. O professor vai avaliar trabalho em paralelo (uma pessoa no front-end, o resto no modelo).
+- **Divisão dos dados gerada** (seed 42, regra de 03/10): treino 6.544 fotos, validação 1.402, teste 1.402, teste temporal 2.992 (lote de 03/07). Fotos fora do CSV usam o código do nome do arquivo como chave. Lista em [../experiments/piloto_anotacao/divisao_v1.csv](../experiments/piloto_anotacao/divisao_v1.csv).
+- **Piloto de anotação preparado:** 300 fotos do treino (150 nítidas, 110 borradas, 40 fora do CSV), 100 por integrante e 50 com dupla anotação. Caixas de medidor, placa e visor, mais legibilidade do número e da leitura, presença de medidor e tipo de visor. Kit em [../experiments/piloto_anotacao/](../experiments/piloto_anotacao/).
+- **Piloto de anotação concluído (300 fotos, todas anotadas pelo João Pedro).** 268 com medidor (2 com mais de um), 32 sem medidor; 268 caixas de medidor, 250 de visor, 207 de placa; 204 visores digitais e 42 analógicos. Mediana de 13 s por foto (89 min no total). Legibilidade por estrato: nas nítidas, leitura legível em 104 de 150 (69%) e número do medidor em 102 (68%); nas borradas, 30 de 110 (27%) e 22 (20%). **Estimativa preliminar para a base** (68% nítidas, 32% borradas, pela EDA): leitura legível em cerca de 56% das fotos, número do medidor em 53%, os dois juntos em 48%, sem medidor em 11%. Isso é um teto para a cobertura automática pela foto e fica perto da meta de 50%. Ressalvas: um anotador só, 260 fotos com CSV. Consistência do mesmo anotador em 19 fotos repetidas: mesma resposta em 16 a 18 de 19 por pergunta; sobreposição das caixas (IoU mediana) 0,87 no medidor, 0,78 no visor e 0,72 na placa. Concordância entre pessoas diferentes (kappa) ainda não medida. Anotações em `gridvision_dados/piloto/anotacoes/piloto_final.json`, fora do Git.
+- **Detector v0 treinado (18/10/2026).** YOLO11n pré-treinado, só com as 300 fotos do piloto (240 treino, 60 checagem), CPU, 27 min. Na checagem: mAP50 0,917 (medidor 0,987, visor 0,936, placa 0,829), precisão 0,904, revocação 0,870; "tem medidor?" certo em 59 de 60 fotos (1 falso positivo). Prova que o caminho funciona; o resultado oficial depende de anotar fotos de validação e teste. Detalhes em [../experiments/detector_v0/](../experiments/detector_v0/).
+- **Recorte do visor + OCR pronto não supera a foto inteira (18/10/2026).** Nas 100 fotos do baseline, recortando visor e placa com o detector v0 e lendo com o PaddleOCR 3.7: leitura 18 a 19 de 100 e número do medidor 30, contra 28 e 41 da foto inteira ampliada 2x. O detector achou o visor em 87 fotos e a placa em 70; o gargalo é o OCR genérico lendo dígitos de display. A métrica "algum texto igual" favorece a foto inteira (muitos textos, coincidência possível). Com o recorte ampliado 2x fixo (no primeiro teste ia só até 96 px de altura), a leitura sobe para 23 de 100 e empata no critério estrito (8 contra 8); 3x e 4x pioram. 7 dos 28 acertos da foto inteira são leituras de 1 a 3 dígitos, sujeitas a coincidência. **Próximo passo: reconhecedor próprio para o visor**, treinado com recortes do detector e a leitura do CSV nas fotos legíveis. Detalhes em [../experiments/recorte_ocr/](../experiments/recorte_ocr/).
+- **Detector v0 avaliado em validação e teste (18/10/2026).** 200 fotos (100 de cada conjunto, sorteadas sem estratificar), pré-anotadas pelo detector e corrigidas à mão pelo João Pedro. mAP50 0,942 (validação 0,935, teste 0,951): medidor 0,942, placa 0,928, visor 0,957. "Tem medidor?" certo em 193 de 200. Resultado puxado para cima pelo viés de ancoragem (a maioria das caixas foi aceita sem mudança). **Legibilidade na amostra aleatória:** leitura 56%, número do medidor 48%, os dois 46%, sem medidor 11%, confirmando a estimativa do piloto: o teto de conferência pela foto fica abaixo da meta de 50%. O conjunto de teste não deve ser usado para ajustar modelos. Detalhes em [../experiments/avaliacao_detector/](../experiments/avaliacao_detector/).
+- **Modelo ligado ao app (18/10/2026).** O protótipo desktop em `app/` (ttkbootstrap) passou a usar o modelo real de `src/gridvision/extracao.py`: detector v0 + PaddleOCR 3.7 (PP-OCRv6 medium) na foto inteira ampliada 2x + fiscal (leitura só dentro da caixa do visor; número do medidor na placa, ou fora dela se tiver 6 dígitos ou mais). Sem as bibliotecas ou os pesos, o app volta à extração simulada. Cerca de 10 s por foto em CPU.
+- **Função do display (informado pelo João Pedro, 18/10/2026).** Medidores digitais mostram o código da função à esquerda do valor; a função de consumo (leitura) é geralmente a 03. O código é separado da leitura; se o display mostrar outra função, a leitura não é aceita e a foto vai ao analista. Lista de códigos de consumo configurável (padrão: 03).
+- **Fotos sem medidor saem da revisão (decisão do grupo, 18/10/2026).** Ficam na tabela e na exportação como "Excluída", sem ir à fila do analista. Risco: falso negativo do detector (4 em 200 na avaliação) tira da revisão uma foto que tinha medidor.
+- **Certeza de legibilidade (18/10/2026).** Classificador simples (regressão logística sobre sinais do detector e do recorte do visor, sem rede nova) dá a cada foto a chance de a leitura ser legível. AUC 0,926 no teste. Limiar escolhido pelo grupo: abaixo de 0,20, a foto vira "Ilegível (certeza alta)" e sai da fila de revisão (no teste, 15 excluídas, todas ilegíveis, de 31 ilegíveis; na validação cruzada, 1 legível em 20 excluídas). Foto que confere nunca é excluída. Destino das excluídas ainda a definir (por ora "pedir nova foto"). Detalhes em [../experiments/legibilidade/](../experiments/legibilidade/).
+- **Primeira medida do app de ponta a ponta (18/10/2026).** Lote de 50 fotos da validação nunca usadas (`gridvision_dados/lote_demo2`), revisado pelo João Pedro no app. Destino: 10 Confere automático (20%), 7 excluídas por ilegibilidade com certeza alta (14%), 3 sem medidor (6%), 30 para o analista (60%). Das 30: 17 ilegíveis de verdade, 12 corrigidas, 1 confirmada. Das 19 "Ilegível" do modelo, 13 eram ilegíveis e 6 legíveis; das 5 "Diverge", 4 eram erro do OCR. Nas 13 fotos com leitura digitada pelo analista, o OCR tinha lido certo só 3 (errou 7, não leu 3), e em 11 delas a leitura certa era a informada: o OCR genérico no display é o gargalo. Classificador de legibilidade contra a decisão do analista: AUC 0,84; nenhuma foto legível abaixo de 40%, e 6 das 17 ilegíveis abaixo de 40% (limiar mantido em 0,20 até ter mais histórico). Os 10 Confere ainda não foram conferidos por ninguém (pendente para provar o erro zero).
+- **Leitor de dígitos próprio (CNN) não funcionou com os rótulos do CSV (18/10/2026).** Treinado com 3.075 recortes do visor e a leitura do CSV como rótulo: acerto exato de 20% (CNN do zero) e 8% (ResNet18 pré-treinada) na validação, abaixo do OCR. Diagnóstico em 200 recortes: o OCR confirma a leitura do CSV em só 33%, e em pelo menos 10% o visor mostra outro número (rótulo não bate com a imagem). O gargalo é dado, não arquitetura. Proposta: transcrever o visor à mão em cerca de 500 recortes e treinar de novo (CNN ou ajuste fino do PaddleOCR). Detalhes em [../experiments/leitor_digitos/](../experiments/leitor_digitos/).
+- **SR2.** Espera-se uma infraestrutura mínima de testes, sem precisar ser robusta. Se o MVP funcional e a apresentação estiverem prontos antes da entrega, a disciplina é considerada entregue (nas notas do atendimento aparece "ACR", provável erro de fala ou transcrição; confirmar o termo).
+
+## Ambiente local (fora do Git)
+
+Na máquina do João Pedro (AMD Ryzen 5 5600X, 16 GB, Windows 11; a GPU AMD Radeon RX 6600 não acelera PaddlePaddle nem o YOLO no Windows, então tudo roda em CPU). Pasta `C:\Users\joaop\gridvision_dados`:
+
+| Caminho | O que é |
+|---|---|
+| `venv_app` | Python 3.12 com PyTorch CPU, Ultralytics, PaddleOCR 3.7 e ttkbootstrap: roda o app com o modelo (`venv_app\Scripts\python.exe app\main.py`, a partir da raiz do repositório) |
+| `venv_labelstudio` | Label Studio (`label-studio start`, porta 8080). Projeto 1: piloto (300 fotos); projeto 4: avaliação (200 fotos) |
+| `detector_v0/runs/v0/weights/best.pt` | Pesos do detector v0 (o app procura aqui; outro caminho com `GRIDVISION_DETECTOR`) |
+| `piloto/`, `avaliacao/` | Fotos e anotações exportadas do piloto e da avaliação |
+| `lote_demo/` | 20 fotos da validação nunca usadas + `informado.csv`, para demonstrar o app |
+| `historico/historico.csv` | Decisões do analista gravadas pelo app |
+
+O zip original da base está em `C:\Users\joaop\Downloads\Base de Dados Neoenergia PE (1).zip`. Para outra pessoa rodar o app com o modelo: [../app/README.md](../app/README.md).
+
+## Disciplinas ligadas ao projeto
+
+Duas disciplinas usam o Projeto 4 como objeto e podem originar decisões do projeto. Detalhes em [fontes/mlops.md](fontes/mlops.md) e [fontes/deep-learning.md](fontes/deep-learning.md), lidos do Classroom em 04/10/2026.
+
+| Disciplina | Entrega | Prazo | Liga com o projeto |
+|---|---|---|---|
+| MLOps (BD031) | AV1, entrega prática: serviço de inferência em BentoML (ou equivalente), repositório público no GitHub e apresentação | Repositório 06/10 23:59 (tag `sr1`); apresentação 07/10 às 19:00 | Servir a extração das fotos (endpoint recebe imagem e devolve número do medidor, função, consumo e confiança) |
+| Deep Learning (BD019) | Lab 02, arquitetura profunda, por grupo | 08/10 23:59 (Marco 2 da disciplina em 29/10) | Arquitetura de rede, rotulagem de pelo menos 300 fotos (50 com dupla rotulagem, kappa de Cohen) e primeiro bloco treinado |
+
+Regras que valem para esses entregáveis:
+
+- Repositório de MLOps é público. Não pode ter imagem nem CSV do cliente, e o README não nomeia a Neoenergia (acordo entre a CESAR e a empresa). Dados e fotos ficam fora do Git, como já definido.
+- **Repositório de MLOps (decidido em 04/10/2026):** repositório novo e público, separado deste, sem citar o cliente e só com imagens sintéticas. Código em `C:\Users\joaop\triagem-medidor-bentoml` (fora do Git deste projeto). Serve o PaddleOCR 2.10 pré-treinado (foto inteira, sem treino) por BentoML. O serviço foi montado do zero e os números do baseline não foram reproduzidos nele. O script do baseline chegou em 05/10/2026 (ver seção Dados). A atividade de MLOps passou a ser feita pelo Henrique (informado pelo João Pedro em 05/10/2026), então confirmar com ele o que vale desse serviço.
+
+Pendências e conflitos aparentes (não resolvidos, valem as decisões acima até o grupo decidir):
+
+- **Divisão dos dados.** O Lab 02 exige partição por lote, nunca aleatória por foto. A decisão de 03/10 divide por medidor (70/15/15 nos lotes de maio, lote de 03/07 como teste temporal). Falta checar se as duas regras são compatíveis para o Lab 02.
+- **Bloco específico do Lab 02 sem dono.** O enunciado lista os grupos Korvian, Luminus, VoltLens e Nortdata e não cita GridVision. O grupo não é a Nortdata e ainda não validou com o professor de Deep Learning qual bloco (K, L, V ou N) responder. Até lá, só a parte comum (0,80) está definida. Enunciado, guia e esqueleto foram lidos em 04/10/2026 (arquivos baixados do Classroom).
+- **Baseline de 02/10.** Script e resultados recebidos em 05/10/2026 (ver seção Dados). Falta definir qual métrica do número do medidor é oficial (42% contido ou 38% igual).
+- **Saída do serviço de MLOps.** O enunciado pede número do medidor, função, consumo e confiança. O problema oficial do SR1 é número do medidor e leitura. Falta alinhar o que o endpoint devolve.
+- **Visibilidade do repositório GridVision.** Este repositório cita a Neoenergia em `docs/`. Se for público, não pode ser o repositório entregue em MLOps. Visibilidade não verificada.
+- **Marco 2 de Deep Learning (29/10)** não consta na tabela de marcos do Projeto 4, que lista só Kick-off, SR1 e SR2.
 
 ## Pendências
 

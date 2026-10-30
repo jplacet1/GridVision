@@ -6,6 +6,10 @@ Projeto de visão computacional (Projeto 4, CESAR School x Neoenergia Pernambuco
 
 Leia [docs/contexto.md](docs/contexto.md) antes de qualquer tarefa. É a fonte única de verdade: dados, números e decisões do projeto vêm de lá, nunca de memória ou de outra conversa.
 
+## Próximo passo
+
+Quando perguntarem "qual o próximo passo" (ou equivalente), siga [docs/proximo-passo.md](docs/proximo-passo.md) ao pé da letra: compare a data de hoje com a fase do cronograma, use a checklist e responda no formato fixo de lá. Não improvise outra estrutura.
+
 ## Regras
 
 - Se uma informação não estiver em `docs/`, pergunte em vez de assumir.

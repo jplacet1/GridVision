@@ -1,5 +1,7 @@
 # GridVision
 
+> **Integrantes do grupo:** comecem por [docs/guia-do-grupo.md](docs/guia-do-grupo.md), que explica como usar este repositório como workspace (com o Claude Code, dados fora do Git e fluxo de branches).
+
 O **GridVision** é um projeto de visão computacional desenvolvido como parte da disciplina de Projeto 4 (Dados) da CESAR School, em parceria com a Neoenergia Pernambuco.
 
 O objetivo do projeto é automatizar a análise de fotos associadas ao processo de leitura de medidores de energia, reduzindo a necessidade de inspeção manual de grandes volumes de imagens.
