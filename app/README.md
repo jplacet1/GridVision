@@ -25,7 +25,7 @@ Status possíveis:
 | Lido | sem leitura informada; o valor lido volta ao analista | sim |
 | Revisão manual | confiança abaixo de 0,90 | sim |
 | Ilegível | número ou leitura não legíveis | sim |
-| Ilegível (certeza alta) | chance de a leitura ser legível abaixo de 0,20 (classificador de legibilidade), sem ter conferido | não: sai da fila como "Excluída (ilegível): pedir nova foto" |
+| Ilegível (certeza alta) | chance de a leitura ser legível abaixo do limiar, sem ter conferido. Com o motor ONNX: classificador v1 (sinais do detector e do OCR), limiar 0,40; sem ele: v0, limiar 0,20 | não: sai da fila como "Excluída (ilegível): pedir nova foto" |
 | Sem medidor | nenhum medidor na foto | não: sai da fila de revisão, mas fica na tabela e na exportação como "Excluída" |
 
 O limiar de confiança (0,90) é provisório. O erro tolerado nas leituras resolvidas sozinhas é zero, então o sistema só decide quando tem certeza.
@@ -45,7 +45,7 @@ O lote é processado em 4 fotos por vez, um processo para cada (outro número co
 
 Se as bibliotecas ou os pesos do detector não estiverem na máquina, o app volta à extração simulada e avisa no topo da tela. Para forçar o modo simulado (só mexer na interface): `GRIDVISION_SIMULADO=1`.
 
-Rodar o app não ensina nada ao modelo. O app avisa quando o lote tem fotos do treino (servem para demonstrar, não para medir) ou do teste e do teste temporal (reservadas para a medida final).
+Processar um lote não ensina nada ao modelo. O botão **Aprender com as decisões** (Histórico) retreina o classificador de legibilidade com as decisões gravadas e só troca o modelo se ele não piorar nas fotos que o atual nunca viu; também guarda o recorte do visor e a leitura de cada foto corrigida, para o leitor próprio (detalhes em [src/gridvision/aprendizado.py](../src/gridvision/aprendizado.py)). Fotos do teste e do teste temporal nunca entram. O app avisa quando o lote tem fotos do treino (servem para demonstrar, não para medir) ou do teste e do teste temporal (reservadas para a medida final).
 
 ## Como rodar
 

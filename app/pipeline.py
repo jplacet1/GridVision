@@ -27,6 +27,11 @@ MODELO_REAL = MOTIVO_SEM_MODELO is None
 EXTENSOES = {".jpg", ".jpeg", ".png"}
 LIMIAR_NITIDEZ = 100.0     # variância do Laplaciano, mesmo limiar da EDA
 LIMIAR_CONFIANCA = 0.90    # provisório: abaixo disso o sistema não decide sozinho (erro tolerado é zero)
+# Nega a foto em que o OCR não achou leitura e a chance de legível fica abaixo disto (proposta de 06/11/2026,
+# a validar com o grupo); 0 desliga. Com o classificador v1 (que já usa os sinais do OCR) fica desligada.
+LIMIAR_ILEGIVEL_SEM_LEITURA = float(os.environ.get(
+    "GRIDVISION_LIMIAR_ILEGIVEL_SEM_LEITURA",
+    "0" if _modelo is not None and _modelo.usa_legibilidade_v1() else "0.50"))
 
 CONFERE = "Confere"
 DIVERGE = "Diverge"
@@ -208,6 +213,11 @@ def decidir(ext, informado):
     lim = limiar_ilegivel()
     if status not in (CONFERE, SO_LEITURA) and 0 <= ext.prob_legivel < lim:
         return ILEGIVEL_CERTO, f"chance de a leitura ser legível {ext.prob_legivel:.0%}, abaixo de {lim:.0%}"
+    # Dois sinais concordando (06/11/2026): o OCR não achou leitura em nenhum passe e o classificador também acha
+    # difícil. Validação + lote_demo2 (150 fotos): 10 negadas a mais, nenhuma legível com o limiar 0,50.
+    if status == ILEGIVEL and not ext.leitura and 0 <= ext.prob_legivel < LIMIAR_ILEGIVEL_SEM_LEITURA:
+        return ILEGIVEL_CERTO, (f"o OCR não achou a leitura e a chance de ser legível é {ext.prob_legivel:.0%}, "
+                                f"abaixo de {LIMIAR_ILEGIVEL_SEM_LEITURA:.0%}")
     return status, motivo
 
 

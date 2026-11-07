@@ -26,6 +26,10 @@ from PIL import Image, ImageTk
 
 import pipeline as pl
 
+# O ttkbootstrap troca o locale do processo para pt-BR ao ser importado; números do código em C (OCR) precisam do ponto
+import locale
+locale.setlocale(locale.LC_NUMERIC, "C")
+
 # Tokens do design system do GridVision, tema escuro (plataforma e demonstrações)
 COR = {
     "surface": "#0a0f18", "surface-raised": "#121926", "ink": "#eef2f7", "ink-muted": "#a3aec2",
@@ -949,6 +953,10 @@ class App(ttk.Window):
         self.h_busca = tk.StringVar()
         ttk.Entry(barra, textvariable=self.h_busca, width=22).pack(side=LEFT, padx=(8, 0))
         self.h_busca.trace_add("write", lambda *a: self._preencher_historico())
+        self.bt_aprender = ttk.Button(barra, text="Aprender com as decisões", bootstyle=PRIMARY, command=self._aprender)
+        self.bt_aprender.pack(side=RIGHT)
+        if not pl.MODELO_REAL:
+            self.bt_aprender.state(["disabled"])
         self.h_resumo = ttk.Label(t, text="", foreground=COR["ink-muted"], font=(self.f_mono, 10))
         self.h_resumo.pack(anchor=W, pady=(0, 8))
         self.h_tabela = self._tabela(
@@ -958,6 +966,49 @@ class App(ttk.Window):
             (140, 100, 220, 110, 200, 90, 90, 110, 260), "motivo")
         self.h_tabela.bind("<Double-1>", lambda e: self._abrir_da_tabela(self.h_tabela, "Histórico"))
         self.historico = []
+
+    def _aprender(self):
+        """Retreina o classificador de legibilidade com as decisões do histórico (com trava) e guarda as
+        leituras corrigidas para o leitor do visor. Roda numa thread; o resultado aparece numa caixa."""
+        if self.processando:
+            Messagebox.show_warning("Espere o lote terminar.", "GridVision", parent=self)
+            return
+        self.bt_aprender.state(["disabled"])
+        self.h_resumo.configure(text="Aprendendo com as decisões…")
+        historico = pl.carregar_historico()
+
+        def trabalhar():
+            try:
+                from gridvision import aprendizado
+                rel = aprendizado.retreinar(pl.HISTORICO.parent.parent, historico,
+                                            progresso=lambda m: self.after(0, lambda: self.h_resumo.configure(text=m)))
+            except Exception as e:  # o app continua com o modelo atual
+                rel = {"erro": str(e)}
+            self.after(0, lambda: self._aprendeu(rel))
+
+        threading.Thread(target=trabalhar, daemon=True).start()
+
+    def _aprendeu(self, rel):
+        self.bt_aprender.state(["!disabled"])
+        self._preencher_historico()
+        if "erro" in rel:
+            Messagebox.show_error(f"O aprendizado falhou; o modelo atual continua.\n{rel['erro']}", "GridVision", parent=self)
+            return
+        if "depois" not in rel:
+            Messagebox.show_info(f"Nada mudou: {rel['motivo']}.\n\nLeituras corrigidas guardadas para o leitor "
+                                 f"do visor: {rel.get('visor', 0)}.", "GridVision", parent=self)
+            return
+        a, d = rel["antes"], rel["depois"]
+        texto = (f"Gabarito: {rel['fotos']} fotos ({rel['do_analista']} decididas por analista), "
+                 f"{rel['novas']} nunca vistas pelo modelo atual.\n\n"
+                 f"Nas fotos novas, modelo atual -> modelo novo:\n"
+                 f"  AUC: {a['auc']:.3f} -> {d['auc']:.3f}\n"
+                 f"  Legíveis entre as negadas: {a['legiveis_entre_negadas']:.0%} ({a['negadas']} negadas) -> "
+                 f"{d['legiveis_entre_negadas']:.0%} ({d['negadas']} negadas)\n\n"
+                 + ("Modelo novo em uso a partir do próximo lote." if rel["promovido"]
+                    else f"Modelo mantido: {rel['motivo']}.")
+                 + f"\n\nLeituras corrigidas guardadas para o leitor do visor: {rel['visor']}.")
+        Messagebox.show_info(texto, "Aprender com as decisões", parent=self)
 
     def _carregar_historico(self):
         try:

@@ -62,7 +62,9 @@ class TestCertezaDeIlegivel(unittest.TestCase):
         return pl.Extracao(True, numero, leitura, 0.95 if leitura and numero else 0.0, "", prob)
 
     def test_limiar_escolhido(self):
-        self.assertAlmostEqual(pl.limiar_ilegivel(), 0.20)
+        # v0: 0,20 (grupo, 18/10/2026); v1, com o motor ONNX: 0,40 (João Pedro, 06/11/2026)
+        esperado = 0.40 if pl._modelo.usa_legibilidade_v1() else 0.20
+        self.assertAlmostEqual(pl.limiar_ilegivel(), esperado)
 
     def test_chance_baixa_sai_da_fila(self):
         st = pl.decidir(self.ext(0.05), ("A1", "10"))[0]
@@ -77,6 +79,13 @@ class TestCertezaDeIlegivel(unittest.TestCase):
 
     def test_so_leitura_vence_a_chance_baixa(self):
         self.assertEqual(pl.decidir(pl.Extracao(True, "", "10", 0.95, "", 0.05), ("A1", "10"))[0], pl.SO_LEITURA)
+
+    def test_sem_leitura_e_chance_media_sai_da_fila(self):
+        self.assertEqual(pl.decidir(self.ext(0.35), ("A1", "10"))[0], pl.ILEGIVEL_CERTO)
+
+    def test_com_leitura_e_chance_media_vai_ao_analista(self):
+        # o OCR achou alguma leitura (sem número e sem bater): o analista decide
+        self.assertEqual(pl.decidir(self.ext(0.45, "99"), ("A1", "10"))[0], pl.ILEGIVEL)
 
     def test_sem_classificador_nao_muda_nada(self):
         self.assertEqual(pl.decidir(self.ext(-1.0), ("A1", "10"))[0], pl.ILEGIVEL)

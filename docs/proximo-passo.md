@@ -66,7 +66,7 @@ Status: `feito`, `pendente`, `bloqueado` (depende de terceiros). Atualizar junto
 | 12a | F3 | Transcrever os 500 recortes do visor com as caixas de função e leitura (kit pronto em 24/10) e retreinar o leitor de dígitos | Grupo | pendente |
 | 12b | F3 | App: zoom e pan na foto da checagem e barra divisória arrastável entre foto e painel, com a posição salva entre sessões (pedido do professor, 24/10). Feito em 24/10: divisórias entre fila, foto e campos, com largura mínima dos dois lados e posição em `gridvision_dados/interface.json` | João Pedro | feito |
 | 12c | F3 | App: miniatura das fotos na lista de resultados e ícones de status além do texto (pedido do professor, 24/10) | Grupo | pendente |
-| 12d | F3 | Consultar o professor Galindo (MLOps, quarta) sobre aprender com as correções do analista (tempo real ou retreino periódico) | Grupo | pendente |
+| 12d | F3 | Consultar o professor Galindo (MLOps, quarta) sobre aprender com as correções do analista (tempo real ou retreino periódico). Em 06/11 o retreino periódico com trava foi implementado no app (botão no Histórico; ver `contexto.md`); falta a opinião dele | Grupo | pendente |
 | 12e | F3 | Mostrar o app ao professor Paulo na aula de Empreendedorismo (sexta) | Grupo | pendente |
 | 12f | F3 | Versionar os pesos dos modelos (ex.: pasta no Drive). Pasta "GridVision modelos" criada em 24/10 com manifestos (ver `contexto.md`); pesos do detector v0 e do leitor v0/v1 enviados em 24/10 (tamanhos conferidos) | João Pedro | feito |
 | 13 | F4 | Avaliar no teste temporal (lote de 03/07) e escolher o modelo candidato | Grupo | pendente |

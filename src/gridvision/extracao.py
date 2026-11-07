@@ -110,32 +110,59 @@ class ResultadoExtracao:
     leitura: str       # vazio se não achou
     confianca: float   # 0 a 1
     detalhe: str       # texto curto para o analista e para depuração
-    prob_legivel: float = -1.0   # chance de a leitura ser legível (classificador v0); -1 se não calculada
+    prob_legivel: float = -1.0   # chance de a leitura ser legível (classificador v0 ou v1); -1 se não calculada
 
 
-# Classificador de legibilidade (experiments/legibilidade): regressão logística sobre sinais do detector
-# e do recorte do visor. Limiar de "ilegível com certeza alta" escolhido pelo grupo em 18/10/2026 (0,20);
-# outro valor com GRIDVISION_LIMIAR_ILEGIVEL.
-_LEGIB = None
+# Classificador de legibilidade (experiments/legibilidade): regressão logística.
+# v0 (18/10/2026): sinais do detector e do recorte do visor; limiar de "ilegível com certeza alta" 0,20.
+# v1 (06/11/2026): v0 + sinais do OCR (passes com dígitos no visor, confiança, concordância entre motores, dígitos
+# na placa). Só vale com o motor ONNX, cujos passes geram esses sinais. Outro limiar com GRIDVISION_LIMIAR_ILEGIVEL.
+_LEGIB = {}
 
 
-def _legibilidade():
-    global _LEGIB
-    if _LEGIB is None:
+def _legibilidade(versao=None):
+    versao = versao or ("v1" if usa_legibilidade_v1() else "v0")
+    if versao not in _LEGIB:
         import json
-        arq = Path(__file__).with_name("legibilidade_v0.json")
-        _LEGIB = json.load(open(arq, encoding="utf-8")) if arq.exists() else {}
-    return _LEGIB
+        arq = Path(__file__).with_name(f"legibilidade_{versao}.json")
+        _LEGIB[versao] = json.load(open(arq, encoding="utf-8")) if arq.exists() else {}
+    return _LEGIB[versao]
+
+
+def usa_legibilidade_v1():
+    return motor_ocr() == "onnx" and Path(__file__).with_name("legibilidade_v1.json").exists()         and os.environ.get("GRIDVISION_LEGIBILIDADE") != "v0"
 
 
 def limiar_ilegivel():
     return float(os.environ.get("GRIDVISION_LIMIAR_ILEGIVEL", _legibilidade().get("limiar_ilegivel", 0.0)))
 
 
-def prob_legivel(sinais):
+def sinais_ocr(passes, visor, placa):
+    """Sinais do classificador v1, a partir dos passes de `_passes`: no visor, quantos passes acharam dígitos,
+    a sequência mais longa, a maior confiança e se dois passes leram a mesma sequência; na placa, a sequência
+    mais longa."""
+    melhores, n_passes, max_dig, max_conf, placa_dig = [], 0, 0, 0.0, 0
+    for regiao, ts in passes:
+        if regiao != "placa" and visor is not None:
+            no_visor = ts if regiao == "visor" else [t for t in ts if _dentro(t["centro"], visor)]
+            toks = [(_digitos(t["texto"]), t["conf"]) for t in no_visor if _digitos(t["texto"])]
+            if toks:
+                n_passes += 1
+                d, c = max(toks, key=lambda x: (len(x[0]), x[1]))
+                max_dig, max_conf = max(max_dig, len(d)), max(max_conf, c)
+                melhores.append(d.lstrip("0"))
+        if regiao != "visor" and placa is not None:
+            na = ts if regiao == "placa" else [t for t in ts if _dentro(t["centro"], placa)]
+            placa_dig = max([placa_dig] + [len(_digitos(t["texto"])) for t in na])
+    concordam = int(len(melhores) >= 2 and any(melhores.count(m) >= 2 and len(m) >= 3 for m in melhores))
+    return {"ocr_passes_digitos": n_passes, "ocr_max_digitos": max_dig, "ocr_max_conf": max_conf,
+            "ocr_concordam": concordam, "ocr_placa_digitos": placa_dig}
+
+
+def prob_legivel(sinais, versao=None):
     """P(leitura legível) pelos coeficientes gravados; -1 se o classificador não estiver disponível."""
     import math
-    m = _legibilidade()
+    m = _legibilidade(versao)
     if m.get("modelo") != "logistica":
         return -1.0
     z = m["intercepto"]
@@ -164,6 +191,11 @@ def motivo_indisponivel():
 
 def _carregar():
     global _detector, _ocr, _ocrs_onnx
+    # Números com ponto decimal para o código em C (OpenCV, ONNX Runtime, Paddle). O ttkbootstrap troca o locale
+    # do processo para pt-BR (vírgula decimal) ao ser importado, e com isso o OCR do app perdia Confere (06/11/2026:
+    # 6 contra 8 no lote_demo3).
+    import locale
+    locale.setlocale(locale.LC_NUMERIC, "C")
     if _detector is None:
         from ultralytics import YOLO
         _detector = YOLO(str(caminho_pesos()))
@@ -322,12 +354,15 @@ def extrair(caminho, informado=None):
     melhor = detectar(img)
     if "medidor" not in melhor and "visor" not in melhor:
         return ResultadoExtracao(False, "", "", 1.0, "detector não achou medidor")
-    p_leg = prob_legivel(sinais_legibilidade(img, melhor))
+    sinais = sinais_legibilidade(img, melhor)
     visor = melhor.get("visor", (None, 0))[0]
     placa = melhor.get("placa", (None, 0))[0]
 
     # 2. OCR: um ou mais passes, cada um com a posição dos textos na foto original
     passes = _passes(img, visor, placa)
+    if usa_legibilidade_v1():
+        sinais.update(sinais_ocr(passes, visor, placa))
+    p_leg = prob_legivel(sinais)
     textos = [t for regiao, ts in passes if regiao == "foto" for t in ts]
 
     num_inf, leit_inf = informado or ("", "")
