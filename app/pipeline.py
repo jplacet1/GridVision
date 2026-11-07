@@ -270,6 +270,54 @@ def processar(caminho, informado=None):
                      lote=caminho.parent.name, prob_legivel=ext.prob_legivel)
 
 
+# Fotos em paralelo (06/11/2026): um processo por foto, cada um com o próprio modelo (o PaddleOCR não é
+# seguro entre threads). 4 por padrão, pensando numa máquina comum de 4 núcleos; outro valor com
+# GRIDVISION_PROCESSOS. As threads da máquina são divididas entre os processos para não brigarem.
+PROCESSOS = max(1, int(os.environ.get("GRIDVISION_PROCESSOS", "4")))
+
+
+def _iniciar_processo(threads):
+    os.environ["OMP_NUM_THREADS"] = os.environ["GRIDVISION_THREADS_OCR"] = str(threads)
+    try:
+        import torch
+        torch.set_num_threads(threads)
+    except ImportError:
+        pass
+
+
+def _processar_ou_erro(caminho, informado):
+    try:
+        return processar(caminho, informado)
+    except Exception as e:  # uma foto ruim não derruba o lote
+        caminho = Path(caminho)
+        return Resultado(caminho.name, str(caminho), 0.0, "", "", 0.0, "", "", REVISAO, f"erro ao processar: {e}",
+                         problemas=P_CONFIANCA, lote=caminho.parent.name)
+
+
+def processar_lote(fotos, informado, cancelar=None, processos=None):
+    """Gera um Resultado por foto, na ordem em que ficam prontos. Com o modelo real, usa `processos`
+    processos (padrão PROCESSOS); na extração simulada, um só (não compensa abrir processos).
+    `cancelar` é um threading.Event: as fotos que ainda não começaram são descartadas."""
+    processos = processos or PROCESSOS
+    if not MODELO_REAL or processos == 1 or len(fotos) == 1:
+        for f in fotos:
+            if cancelar is not None and cancelar.is_set():
+                return
+            yield _processar_ou_erro(f, informado.get(Path(f).name))
+        return
+    from concurrent.futures import ProcessPoolExecutor, as_completed
+    threads = max(1, (os.cpu_count() or processos) // processos)
+    ex = ProcessPoolExecutor(processos, initializer=_iniciar_processo, initargs=(threads,))
+    try:
+        futuros = [ex.submit(_processar_ou_erro, f, informado.get(Path(f).name)) for f in fotos]
+        for fu in as_completed(futuros):
+            if cancelar is not None and cancelar.is_set():
+                return
+            yield fu.result()
+    finally:
+        ex.shutdown(wait=False, cancel_futures=True)
+
+
 def registrar_decisao(r):
     """Acrescenta a decisão do analista ao histórico (uma linha por decisão; revisar de novo
     acrescenta outra linha, e a mais recente vale)."""

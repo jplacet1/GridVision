@@ -35,11 +35,13 @@ O limiar de confiança (0,90) é provisório. O erro tolerado nas leituras resol
 A extração vem de [src/gridvision/extracao.py](../src/gridvision/extracao.py), o mesmo código usado nas avaliações:
 
 1. **Detector v0** (YOLO11n): tem medidor? onde estão visor e placa?
-2. **PaddleOCR 3.7** na foto inteira ampliada 2x, guardando a posição de cada texto.
-3. **Fiscal:** a leitura só vale se estiver dentro da caixa do visor; o número do medidor, dentro da placa (ou em qualquer lugar, se tiver 6 dígitos ou mais).
+2. **OCR** com a posição de cada texto. Motor padrão (06/11/2026): PP-OCRv6 medium e PP-OCRv5 mobile convertidos para ONNX, cada um lendo a foto inteira ampliada 2x e os recortes do visor e da placa; roda na GPU (qualquer placa DirectX 12, via DirectML) ou na CPU. Sem os modelos ONNX, volta ao PaddleOCR 3.7 (v6 medium) só na foto inteira. Outro motor: `GRIDVISION_OCR=v6_medium` ou `v5_mobile`; ONNX na CPU: `GRIDVISION_GPU=0`.
+3. **Fiscal:** a leitura só vale se estiver dentro da caixa do visor; o número do medidor, dentro da placa (ou em qualquer lugar, se tiver 6 dígitos ou mais). Com vários passes, os candidatos de todos eles entram na comparação com o CSV.
 4. **Função do display:** o código da função (03 = consumo) aparece à esquerda da leitura e é separado dela. Se a função não for de consumo, a leitura não é aceita. Outros códigos: `GRIDVISION_FUNCOES_LEITURA="03,..."`.
 5. **Leitura sem zeros à esquerda:** o display mostra 007237, o CSV traz 7237 (nenhuma leitura da base começa com 0). O valor lido sai no formato do CSV; o que o visor mostrava fica no motivo. O número do medidor não é alterado (o zero faz parte do identificador).
 6. **Confiança:** a menor entre a do OCR na leitura e no número.
+
+O lote é processado em 4 fotos por vez, um processo para cada (outro número com `GRIDVISION_PROCESSOS`; 1 desliga o paralelo).
 
 Se as bibliotecas ou os pesos do detector não estiverem na máquina, o app volta à extração simulada e avisa no topo da tela. Para forçar o modo simulado (só mexer na interface): `GRIDVISION_SIMULADO=1`.
 
@@ -64,6 +66,8 @@ pip install torch torchvision --index-url https://download.pytorch.org/whl/cpu
 pip install -r app/requirements-modelo.txt
 python app/main.py
 ```
+
+Para o motor ONNX (mais rápido e com mais Confere): `pip install --no-deps onnxruntime-directml==1.24.4 rapidocr==3.10.0 omegaconf==2.4.0` (sem dependências, para não instalar um segundo OpenCV) e os modelos ONNX em `~/gridvision_dados/onnx` (peça ao João Pedro; outro caminho com `GRIDVISION_ONNX`).
 
 Os pesos do detector (`best.pt`, cerca de 5 MB) ficam fora do Git. Peça ao João Pedro e salve em `~/gridvision_dados/detector_v0/runs/v0/weights/best.pt`, ou aponte outro caminho com `GRIDVISION_DETECTOR`. Na primeira execução o PaddleOCR baixa os modelos dele (cerca de 100 MB).
 

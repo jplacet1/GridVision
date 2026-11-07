@@ -25,7 +25,7 @@ import pipeline as pl
 
 DADOS, ZIP = Path(sys.argv[1]), Path(sys.argv[2])
 AVAL = DADOS / "avaliacao"
-OCR = os.environ.get("GRIDVISION_OCR", "v6_medium")
+OCR = pl._modelo.motor_ocr() if pl._modelo is not None else os.environ.get("GRIDVISION_OCR", "v6_medium")
 # um cache por modelo de OCR; o do padrão mantém o nome original
 CACHE = DADOS / "medida_mvp" / ("extracoes_validacao.json" if OCR == "v6_medium" else f"extracoes_validacao_{OCR}.json")
 

@@ -497,16 +497,15 @@ class App(ttk.Window):
         self.after(50, self._acompanhar)
 
     def _trabalhar(self, fotos, informado):
-        for i, f in enumerate(fotos, 1):
-            if self._cancelar.is_set():
-                break
-            self._fila.put(("atual", f.name))
-            try:
-                r = pl.processar(f, informado.get(f.name))
-            except Exception as e:  # uma foto ruim não derruba o lote
-                r = pl.Resultado(f.name, str(f), 0.0, "", "", 0.0, "", "", pl.REVISAO, f"erro ao processar: {e}",
-                                 problemas=pl.P_CONFIANCA, lote=f.parent.name)
-            self._fila.put(("item", r))
+        n = min(pl.PROCESSOS, len(fotos)) if pl.MODELO_REAL else 1
+        self._fila.put(("atual", f"{n} fotos por vez" if n > 1 else fotos[0].name))
+        try:
+            for r in pl.processar_lote(fotos, informado, self._cancelar):
+                self._fila.put(("item", r))
+                if n == 1:
+                    self._fila.put(("atual", r.arquivo))
+        except Exception as e:  # processo paralelo quebrado: avisa e encerra o lote com o que já saiu
+            self._fila.put(("atual", f"processamento interrompido: {e}"))
         self._fila.put(("fim",))
 
     def _acompanhar(self):
