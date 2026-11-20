@@ -26,7 +26,7 @@ Status possíveis:
 | Lido | sem leitura informada; o valor lido volta ao analista | sim |
 | Revisão manual | confiança abaixo de 0,90 | sim |
 | Ilegível | número ou leitura não legíveis | sim |
-| Ilegível (certeza alta) | chance de a leitura ser legível abaixo do limiar, sem ter conferido. Com o motor ONNX: classificador v1 (sinais do detector e do OCR), limiar 0,40; sem ele: v0, limiar 0,20 | não: sai da fila como "Excluída (ilegível): pedir nova foto" |
+| Ilegível (certeza alta) | chance de a leitura ser legível abaixo do limiar, sem ter conferido. Com o motor ONNX: classificador v1 (sinais do detector e do OCR), limiar 0,02 (decisão de 20/11/2026: no máximo 5% de legíveis entre as negadas); sem ele: v0, limiar 0,20 | não: sai da fila como "Excluída (ilegível): pedir nova foto" |
 | Sem medidor | nenhum medidor na foto | não: sai da fila de revisão, mas fica na tabela e na exportação como "Excluída" |
 
 Em todas as tabelas e na revisão, o status vem com um ícone antes da palavra, além da cor: ✔ Confere, ✖ Diverge, ½ Só a leitura confere, ○ Lido, ▲ Revisão manual, ? Ilegível, Ø Ilegível (certeza alta), — Sem medidor.

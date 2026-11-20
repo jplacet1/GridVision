@@ -6,8 +6,8 @@ Rodar da raiz do repositório: python -m unittest discover app
 - Fotos sintéticas (geradas aqui, sem dado do cliente): rodam em qualquer máquina, com extração simulada.
 - Com o modelo real instalado: uma foto sintética passa pelo modelo sem erro.
 - Regressão no lote_demo3 (30 fotos da validação, fora do Git): só roda onde a pasta existe e o modelo real
-  carrega. Compara a contagem por status com a medida de 20/11/2026 (motor ONNX, classificador v1, limiar 0,40,
-  código de barras da placa: 1 Confere a mais que sem ele).
+  carrega. Compara a contagem por status com a medida de 20/11/2026 (motor ONNX, classificador v1, limiar 0,02
+  desde a decisão da 12h, código de barras da placa: 1 Confere a mais que sem ele).
 """
 import csv, io, os, tempfile, unittest
 from collections import Counter
@@ -22,7 +22,7 @@ import processar
 
 LOTE_REGRESSAO = Path(os.environ.get("GRIDVISION_LOTE_REGRESSAO",
                                      Path.home() / "gridvision_dados" / "lote_demo3"))
-ESPERADO_REGRESSAO = {pl.CONFERE: 9, pl.DIVERGE: 4, pl.REVISAO: 5, pl.ILEGIVEL: 3, pl.ILEGIVEL_CERTO: 8,
+ESPERADO_REGRESSAO = {pl.CONFERE: 9, pl.DIVERGE: 4, pl.REVISAO: 7, pl.ILEGIVEL: 8, pl.ILEGIVEL_CERTO: 1,
                       pl.SEM_MEDIDOR: 1}
 
 

@@ -62,12 +62,12 @@ class TestCertezaDeIlegivel(unittest.TestCase):
         return pl.Extracao(True, numero, leitura, 0.95 if leitura and numero else 0.0, "", prob)
 
     def test_limiar_escolhido(self):
-        # v0: 0,20 (grupo, 18/10/2026); v1, com o motor ONNX: 0,40 (João Pedro, 06/11/2026)
-        esperado = 0.40 if pl._modelo.usa_legibilidade_v1() else 0.20
+        # v0: 0,20 (grupo, 18/10/2026); v1, com o motor ONNX: 0,02 (12h, 20/11/2026; era 0,40 desde 06/11)
+        esperado = 0.02 if pl._modelo.usa_legibilidade_v1() else 0.20
         self.assertAlmostEqual(pl.limiar_ilegivel(), esperado)
 
     def test_chance_baixa_sai_da_fila(self):
-        st = pl.decidir(self.ext(0.05), ("A1", "10"))[0]
+        st = pl.decidir(self.ext(0.01), ("A1", "10"))[0]
         self.assertEqual(st, pl.ILEGIVEL_CERTO)
         self.assertIn(st, pl.EXCLUIDOS)
 
@@ -75,13 +75,15 @@ class TestCertezaDeIlegivel(unittest.TestCase):
         self.assertEqual(pl.decidir(self.ext(0.60), ("A1", "10"))[0], pl.ILEGIVEL)
 
     def test_confere_vence_a_chance_baixa(self):
-        self.assertEqual(pl.decidir(self.ext(0.05, "10", "1"), ("A1", "10"))[0], pl.CONFERE)
+        self.assertEqual(pl.decidir(self.ext(0.01, "10", "1"), ("A1", "10"))[0], pl.CONFERE)
 
     def test_so_leitura_vence_a_chance_baixa(self):
-        self.assertEqual(pl.decidir(pl.Extracao(True, "", "10", 0.95, "", 0.05), ("A1", "10"))[0], pl.SO_LEITURA)
+        self.assertEqual(pl.decidir(pl.Extracao(True, "", "10", 0.95, "", 0.01), ("A1", "10"))[0], pl.SO_LEITURA)
 
-    def test_sem_leitura_e_chance_media_sai_da_fila(self):
-        self.assertEqual(pl.decidir(self.ext(0.35), ("A1", "10"))[0], pl.ILEGIVEL_CERTO)
+    def test_sem_leitura_e_chance_media(self):
+        # v0: a regra "sem leitura e chance abaixo de 0,50" nega; v1 (regra desligada, limiar 0,02): vai ao analista
+        esperado = pl.ILEGIVEL if pl._modelo.usa_legibilidade_v1() else pl.ILEGIVEL_CERTO
+        self.assertEqual(pl.decidir(self.ext(0.35), ("A1", "10"))[0], esperado)
 
     def test_com_leitura_e_chance_media_vai_ao_analista(self):
         # o OCR achou alguma leitura (sem número e sem bater): o analista decide

@@ -123,7 +123,7 @@ def retreinar(dados, historico, progresso=print, gravar=True):
     from sklearn.model_selection import StratifiedKFold, cross_val_predict
     dados = Path(dados)
     atual = json.load(open(ARQ_MODELO, encoding="utf-8"))
-    limiar = atual.get("limiar_ilegivel", 0.40)
+    limiar = atual.get("limiar_ilegivel", 0.02)
     gab = gabarito(dados, historico)
     s = sinais(dados, gab, progresso)
     fotos = [f for f in gab if f in s]

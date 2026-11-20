@@ -1,4 +1,4 @@
-# 20/11/2026: transcrição do visor (12a), leitor CTC v1 conferência dos Confere (10d) e valores-alvo (11)
+# 20/11/2026: transcrição do visor (12a), leitor CTC v1 conferência dos Confere (10d) , valores-alvo (11) e limiar (12h)
 
 ## O que foi feito
 
@@ -10,6 +10,7 @@
 - Item 12a concluído nos três lugares; prioridades renumeradas (10d passa a ser a 1).
 - Item 10d: a 10d tinha sido marcada como concluída sem querer no artefato; voltou para em andamento. Projeto 8 "GridVision conferência dos Confere (lote_demo6)" criado no Label Studio local ([../../experiments/medida_mvp/conferir_confere.py](../../experiments/medida_mvp/conferir_confere.py)): foto inteira com zoom, leitura e número conferidos pelo app ao lado, cinco respostas sem pré-marcação. Resultado: 63 de 63 certos (erro zero; 0 em 90 somando lote_demo2 e validação). 10d concluída nos três lugares; o 11 passa a ser a prioridade 1.
 - Item 11: valores-alvo definidos pelo João Pedro (pelo grupo) e registrados em `contexto.md`: localização mAP50 ≥ 0,90 por classe e "tem medidor?" ≥ 95%; acerto exato ≥ 50%; erro no Confere 0 e legíveis entre as negadas ≤ 5%; cobertura ≥ 50%. Hoje passam localização, erro no Confere e cobertura; não passam acerto exato (40%) e negadas (23% no limiar 0,40). Item em andamento até a resposta do professor Erick (a Neoenergia não vai validar).
+- Item 12h: limiar de "Ilegível (certeza alta)" do classificador v1 baixado de 0,40 para 0,02 (João Pedro pelo grupo), o único que cumpre ≤ 5% de legíveis entre as negadas (2% no lote_demo6); a cobertura cai para 30%. `legibilidade_v1.json`, testes e README do app atualizados; 29 testes de unidade (v1 e v0) e 7 funcionais passam (regressão no lote_demo3: negadas de 8 para 1).
 
 ## Pendências
 
@@ -17,4 +18,5 @@
 - Testar o v1 como passe extra no app (se acrescenta Confere) e como sinal do classificador de legibilidade (12h).
 - 3 tarefas de treino ficaram sem anotação no projeto 7.
 - Pedir ao professor Erick que valide os valores-alvo; a Neoenergia não vai validar. Sem resposta, seguir com os valores do grupo, registrados como não validados.
-- Conflito a resolver na 12h: cumprir ≤ 5% de legíveis entre as negadas baixa o limiar e derruba a cobertura abaixo de 50%, a menos que o leitor e o classificador melhorem.
+- Cobertura em 30% com o limiar 0,02, abaixo do piso de 50%: subir com o refino do leitor e do classificador (item 12) antes do teste temporal (13). Rodar o lote_demo6 inteiro com o limiar novo para confirmar os 30%.
+- O artefato da arquitetura ainda mostra o limiar 0,40.

@@ -70,7 +70,7 @@ Status: `feito`, `pendente`, `em andamento` (começado, ainda não concluído), 
 | 12e | F3 | Mostrar o app ao professor Paulo na aula de Empreendedorismo (sexta). Cancelado em 20/11 (João Pedro) | Grupo | cancelado |
 | 12f | F3 | Versionar os pesos dos modelos (ex.: pasta no Drive). Pasta "GridVision modelos" criada em 24/10 com manifestos (ver `contexto.md`); pesos do detector v0 e do leitor v0/v1 enviados em 24/10 (tamanhos conferidos) | João Pedro | feito |
 | 12g | F4 | Analisar as fotos negadas pelo classificador v1 (limiar 0,40) e mostrar que nenhuma com salvação é eliminada (pedido do professor, 07/11). Base: lote_demo6. Feito em 11/11 (revisão cega): 46 das 198 negadas tinham salvação, o limiar não passa (ver `contexto.md`) | João Pedro | feito |
-| 12h | F4 | Decidir o novo limiar de "Ilegível (certeza alta)" com a tabela de 11/11 (ex.: 0,05 nega 77 com 7 salváveis) ou melhorar os sinais do classificador (leitor próprio, item 12a) | Grupo | pendente |
+| 12h | F4 | Decidir o novo limiar de "Ilegível (certeza alta)" com a tabela de 11/11 (ex.: 0,05 nega 77 com 7 salváveis) ou melhorar os sinais do classificador (leitor próprio, item 12a). Feito em 20/11: limiar 0,02 (2% de legíveis entre as negadas, cobertura de 30% no lote_demo6; ver `contexto.md`) | Grupo | feito |
 | 13 | F4 | Avaliar no teste temporal (lote de 03/07) e escolher o modelo candidato | Grupo | pendente |
 | 14 | F4 | Fechar a arquitetura final e registrar em `contexto.md` | Grupo | pendente |
 | 15 | F5 | Iniciar a integração do modelo no MVP, com tela de revisão do analista. Adiantado: modelo ligado ao app em 18/10, com revisão, histórico e exportação. Dado como concluído pelo João Pedro em 20/11 | João Pedro | feito |
