@@ -37,3 +37,9 @@ Em 200 recortes de treino sorteados (chance de legível ≥ 0,6), o PaddleOCR no
 Só cerca de um terço dos rótulos é confirmado e pelo menos 10% não batem com a imagem (provável: display em outra função, valor digitado em outro momento, ou foto ilegível que passou pelo filtro). Com 3 mil exemplos e esse ruído, a rede recebe sinais contraditórios.
 
 Próximo passo proposto: transcrever o visor à mão (só o recorte, digitando o que está escrito, inclusive a função) em cerca de 500 recortes, e treinar de novo a CNN e/ou ajustar o reconhecedor do PaddleOCR com rótulos limpos. As correções do analista no app também viram rótulos limpos.
+
+## Transcrição (projeto 7 do Label Studio local, 20/11/2026)
+
+Regra de leitura da exportação: o texto e as caixas só valem quando a situação é "legível, é o consumo". Em "ilegível", "outra tela" e "não é o visor", o texto pré-preenchido pelo OCR é ignorado (o anotador não precisa apagar), e o recorte entra só como exemplo da situação.
+
+Resultado do retreino com a transcrição: ver `experiments/leitor_ctc/treinar_transcricao.py` e a entrada de 20/11/2026 em `docs/contexto.md` (ctc_v1: texto exato 44% contra 33% do OCR atual na validação; leitura empatada com o ctc_v0 pelo mesmo critério, 38 contra 39 de 64).

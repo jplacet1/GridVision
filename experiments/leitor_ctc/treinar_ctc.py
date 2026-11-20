@@ -26,14 +26,14 @@ SEMENTE = 42
 # ---------- modelo ----------
 
 class CRNN(nn.Module):
-    def __init__(self):
+    def __init__(self, classes=len(ALFABETO) + 1):
         super().__init__()
         def bloco(i, o, pool):
             return [nn.Conv2d(i, o, 3, padding=1), nn.BatchNorm2d(o), nn.ReLU(inplace=True)] + ([nn.MaxPool2d(pool)] if pool else [])
         self.cnn = nn.Sequential(*bloco(1, 32, 2), *bloco(32, 64, 2), *bloco(64, 128, None), *bloco(128, 128, (2, 1)),
                                  *bloco(128, 192, None), *bloco(192, 192, (2, 1)), nn.Dropout2d(0.1))
         self.rnn = nn.LSTM(192 * 2, 128, num_layers=2, bidirectional=True, batch_first=True, dropout=0.2)
-        self.saida = nn.Linear(256, len(ALFABETO) + 1)   # 0 = branco do CTC
+        self.saida = nn.Linear(256, classes)   # 0 = branco do CTC
 
     def forward(self, x):                      # x: (N, 1, 32, 128)
         f = self.cnn(x)                        # (N, 192, 2, 32)
@@ -93,8 +93,9 @@ def _digito(img, x, y, w, h, t, d, cor, inclina):
         cv2.line(img, p0, p1, cor, t, cv2.LINE_AA)
 
 
-def sintetico(rnd):
-    """Um visor sintético e o rótulo visível (função opcional + leitura com zeros à esquerda)."""
+def sintetico(rnd, espaco=False):
+    """Um visor sintético e o rótulo visível (função opcional + leitura com zeros à esquerda).
+    espaco=True separa a função da leitura com um espaço no rótulo (leitor treinado com a transcrição)."""
     n = rnd.randint(4, 8)
     leitura = "".join(rnd.choice(ALFABETO) for _ in range(n))
     if rnd.random() < 0.5:
@@ -118,7 +119,7 @@ def sintetico(rnd):
             _digito(img, xi, 15, dw, dh, t, "8", fantasma, inc)
     for xi, ch in zip(xs, rotulo):
         _digito(img, xi, 15, dw, dh, t, ch, int(cor), inc)
-    return _sujar(img, rnd), rotulo
+    return _sujar(img, rnd), (funcao + " " + leitura if espaco and funcao else rotulo)
 
 
 def _sujar(img, rnd):
