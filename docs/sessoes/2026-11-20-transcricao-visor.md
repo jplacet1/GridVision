@@ -1,4 +1,4 @@
-# 20/11/2026: transcrição do visor (12a) e leitor CTC v1
+# 20/11/2026: transcrição do visor (12a), leitor CTC v1 e conferência dos Confere (10d)
 
 ## O que foi feito
 
@@ -8,6 +8,7 @@
 - João Pedro transcreveu 497 dos 500. Exportação em `gridvision_dados/transcricao/export_20261120.json`, fora do Git.
 - Leitor CTC v1 ([../../experiments/leitor_ctc/treinar_transcricao.py](../../experiments/leitor_ctc/treinar_transcricao.py)): ajuste fino do ctc_v0 com 263 recortes legíveis, com o espaço entre função e leitura como símbolo. Na validação (64): texto exato 44% contra 33% do OCR atual e 19% do v0; leitura empatada com o v0 (38 contra 39). Números em `contexto.md`.
 - Item 12a concluído nos três lugares; prioridades renumeradas (10d passa a ser a 1).
+- Item 10d: a 10d tinha sido marcada como concluída sem querer no artefato; voltou para em andamento. Projeto 8 "GridVision conferência dos Confere (lote_demo6)" criado no Label Studio local ([../../experiments/medida_mvp/conferir_confere.py](../../experiments/medida_mvp/conferir_confere.py)): foto inteira com zoom, leitura e número conferidos pelo app ao lado, cinco respostas sem pré-marcação. Resultado: 63 de 63 certos (erro zero; 0 em 90 somando lote_demo2 e validação). 10d concluída nos três lugares; o 11 passa a ser a prioridade 1.
 
 ## Pendências
 
