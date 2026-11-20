@@ -1,0 +1,10 @@
+<View>
+  <Header value="A leitura do visor dá para ler?"/>
+  <Image name="foto" value="$image" zoom="true" zoomControl="true" rotateControl="true"/>
+  <Choices name="leitura" toName="foto" choice="single" showInline="true" required="true">
+    <Choice value="Legível" hotkey="1"/>
+    <Choice value="Legível com esforço" hotkey="2"/>
+    <Choice value="Ilegível" hotkey="3"/>
+    <Choice value="Sem medidor ou visor" hotkey="4"/>
+  </Choices>
+</View>

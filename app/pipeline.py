@@ -27,6 +27,11 @@ MODELO_REAL = MOTIVO_SEM_MODELO is None
 EXTENSOES = {".jpg", ".jpeg", ".png"}
 LIMIAR_NITIDEZ = 100.0     # variância do Laplaciano, mesmo limiar da EDA
 LIMIAR_CONFIANCA = 0.90    # provisório: abaixo disso o sistema não decide sozinho (erro tolerado é zero)
+# Nega a foto em que o OCR não achou leitura e a chance de legível fica abaixo disto (proposta de 06/11/2026,
+# a validar com o grupo); 0 desliga. Com o classificador v1 (que já usa os sinais do OCR) fica desligada.
+LIMIAR_ILEGIVEL_SEM_LEITURA = float(os.environ.get(
+    "GRIDVISION_LIMIAR_ILEGIVEL_SEM_LEITURA",
+    "0" if _modelo is not None and _modelo.usa_legibilidade_v1() else "0.50"))
 
 CONFERE = "Confere"
 DIVERGE = "Diverge"
@@ -35,7 +40,8 @@ REVISAO = "Revisão manual"
 ILEGIVEL = "Ilegível"
 SEM_MEDIDOR = "Sem medidor"
 ILEGIVEL_CERTO = "Ilegível (certeza alta)"
-STATUS = [CONFERE, DIVERGE, LIDO, REVISAO, ILEGIVEL, ILEGIVEL_CERTO, SEM_MEDIDOR]
+SO_LEITURA = "Só a leitura confere"   # número do medidor ilegível: analista confere o número
+STATUS = [CONFERE, DIVERGE, SO_LEITURA, LIDO, REVISAO, ILEGIVEL, ILEGIVEL_CERTO, SEM_MEDIDOR]
 
 # Só "Confere" sai sem analista. "Lido" (sem leitura informada) volta ao analista com o valor lido.
 AUTOMATICOS = {CONFERE}
@@ -54,12 +60,13 @@ P_LEITURA = "Leitura não lida"
 P_NUMERO = "Número não lido"
 P_FUNCAO = "Display em outra função"
 P_DIVERGE = "Leitura diferente da informada"
+P_NUMERO_DIVERGE = "Número diferente do informado"
 P_CONFIANCA = "Confiança baixa"
 P_BORRADA = "Foto borrada"
 P_SEM_INFORMADO = "Sem leitura informada"
 P_ILEGIVEL_CERTO = "Ilegível com certeza alta"
 PROBLEMAS = [P_SEM_MEDIDOR, P_ILEGIVEL_CERTO, P_SEM_VISOR, P_SEM_PLACA, P_LEITURA, P_NUMERO, P_FUNCAO, P_DIVERGE,
-             P_CONFIANCA, P_BORRADA, P_SEM_INFORMADO]
+             P_NUMERO_DIVERGE, P_CONFIANCA, P_BORRADA, P_SEM_INFORMADO]
 
 # Histórico das decisões do analista: arquivo local, fora do Git (tem nomes de fotos e leituras).
 HISTORICO = Path(os.environ.get("GRIDVISION_HISTORICO", Path.home() / "gridvision_dados" / "historico" / "historico.csv"))
@@ -185,6 +192,13 @@ def mesma_leitura(a, b):
     return a.lstrip("0") == b.lstrip("0")
 
 
+def mesmo_numero(lido, informado):
+    """O CSV pode trazer vários medidores ("a/b") e letras; compara só os dígitos de cada um.
+    Zero à esquerda conta: no número do medidor ele faz parte do número."""
+    alvos = ["".join(c for c in m if c.isdigit()) for m in informado.split("/")]
+    return bool(lido) and lido in alvos
+
+
 def limiar_ilegivel():
     return _modelo.limiar_ilegivel() if _modelo is not None else 0.0
 
@@ -197,21 +211,35 @@ def decidir(ext, informado):
         return SEM_MEDIDOR, "nenhum medidor encontrado na foto"
     status, motivo = _decidir_leitura(ext, informado)
     lim = limiar_ilegivel()
-    if status != CONFERE and 0 <= ext.prob_legivel < lim:
+    if status not in (CONFERE, SO_LEITURA) and 0 <= ext.prob_legivel < lim:
         return ILEGIVEL_CERTO, f"chance de a leitura ser legível {ext.prob_legivel:.0%}, abaixo de {lim:.0%}"
+    # Dois sinais concordando (06/11/2026): o OCR não achou leitura em nenhum passe e o classificador também acha
+    # difícil. Validação + lote_demo2 (150 fotos): 10 negadas a mais, nenhuma legível com o limiar 0,50.
+    if status == ILEGIVEL and not ext.leitura and 0 <= ext.prob_legivel < LIMIAR_ILEGIVEL_SEM_LEITURA:
+        return ILEGIVEL_CERTO, (f"o OCR não achou a leitura e a chance de ser legível é {ext.prob_legivel:.0%}, "
+                                f"abaixo de {LIMIAR_ILEGIVEL_SEM_LEITURA:.0%}")
     return status, motivo
 
 
 def _decidir_leitura(ext, informado):
-    if not ext.leitura or not ext.numero:
+    """Confere sozinho só se leitura E número do medidor batem com o CSV (decisão de 24/10/2026):
+    o número prova que a foto é do medidor certo. Leitura batendo com número ilegível vai ao
+    analista com a leitura preenchida; número diferente do CSV é Diverge."""
+    num_inf, leit_inf = informado or ("", "")
+    leitura_bate = bool(ext.leitura and leit_inf) and mesma_leitura(ext.leitura, leit_inf)
+    if not ext.leitura or (not ext.numero and not leitura_bate):
         return ILEGIVEL, "número ou leitura não legível na foto"
     if ext.confianca < LIMIAR_CONFIANCA:
         return REVISAO, f"confiança {ext.confianca:.2f} abaixo de {LIMIAR_CONFIANCA:.2f}"
-    if not informado or not informado[1]:
+    if not leit_inf:
         return LIDO, "sem leitura informada; confirmar o valor lido"
-    if mesma_leitura(ext.leitura, informado[1]):
-        return CONFERE, "leitura da foto igual à informada"
-    return DIVERGE, f"foto {ext.leitura}, informado {informado[1]}"
+    if not leitura_bate:
+        return DIVERGE, f"leitura: foto {ext.leitura}, informado {leit_inf}"
+    if not ext.numero:
+        return SO_LEITURA, "leitura igual à informada; número do medidor não legível na foto"
+    if not mesmo_numero(ext.numero, num_inf):
+        return DIVERGE, f"número do medidor: foto {ext.numero}, informado {num_inf or '-'}"
+    return CONFERE, "leitura e número do medidor iguais aos informados"
 
 
 def classificar_problemas(ext, status, nit, informado):
@@ -227,7 +255,9 @@ def classificar_problemas(ext, status, nit, informado):
     if "display não mostra o consumo" in det: p.append(P_FUNCAO)
     elif not ext.leitura and "sem visor" not in det: p.append(P_LEITURA)
     if not ext.numero: p.append(P_NUMERO)
-    if status == DIVERGE: p.append(P_DIVERGE)
+    if status == DIVERGE and informado:
+        if not mesma_leitura(ext.leitura, informado[1]): p.append(P_DIVERGE)
+        elif not mesmo_numero(ext.numero, informado[0]): p.append(P_NUMERO_DIVERGE)
     if status == REVISAO: p.append(P_CONFIANCA)
     if status == LIDO: p.append(P_SEM_INFORMADO)
     if nit < LIMIAR_NITIDEZ: p.append(P_BORRADA)
@@ -250,12 +280,61 @@ def processar(caminho, informado=None):
                      lote=caminho.parent.name, prob_legivel=ext.prob_legivel)
 
 
+# Fotos em paralelo (06/11/2026): um processo por foto, cada um com o próprio modelo (o PaddleOCR não é
+# seguro entre threads). 4 por padrão, pensando numa máquina comum de 4 núcleos; outro valor com
+# GRIDVISION_PROCESSOS. As threads da máquina são divididas entre os processos para não brigarem.
+PROCESSOS = max(1, int(os.environ.get("GRIDVISION_PROCESSOS", "4")))
+
+
+def _iniciar_processo(threads):
+    os.environ["OMP_NUM_THREADS"] = os.environ["GRIDVISION_THREADS_OCR"] = str(threads)
+    try:
+        import torch
+        torch.set_num_threads(threads)
+    except ImportError:
+        pass
+
+
+def _processar_ou_erro(caminho, informado):
+    try:
+        return processar(caminho, informado)
+    except Exception as e:  # uma foto ruim não derruba o lote
+        caminho = Path(caminho)
+        return Resultado(caminho.name, str(caminho), 0.0, "", "", 0.0, "", "", REVISAO, f"erro ao processar: {e}",
+                         problemas=P_CONFIANCA, lote=caminho.parent.name)
+
+
+def processar_lote(fotos, informado, cancelar=None, processos=None):
+    """Gera um Resultado por foto, na ordem em que ficam prontos. Com o modelo real, usa `processos`
+    processos (padrão PROCESSOS); na extração simulada, um só (não compensa abrir processos).
+    `cancelar` é um threading.Event: as fotos que ainda não começaram são descartadas."""
+    processos = processos or PROCESSOS
+    if not MODELO_REAL or processos == 1 or len(fotos) == 1:
+        for f in fotos:
+            if cancelar is not None and cancelar.is_set():
+                return
+            yield _processar_ou_erro(f, informado.get(Path(f).name))
+        return
+    from concurrent.futures import ProcessPoolExecutor, as_completed
+    threads = max(1, (os.cpu_count() or processos) // processos)
+    ex = ProcessPoolExecutor(processos, initializer=_iniciar_processo, initargs=(threads,))
+    try:
+        futuros = [ex.submit(_processar_ou_erro, f, informado.get(Path(f).name)) for f in fotos]
+        for fu in as_completed(futuros):
+            if cancelar is not None and cancelar.is_set():
+                return
+            yield fu.result()
+    finally:
+        ex.shutdown(wait=False, cancel_futures=True)
+
+
 def registrar_decisao(r):
     """Acrescenta a decisão do analista ao histórico (uma linha por decisão; revisar de novo
     acrescenta outra linha, e a mais recente vale)."""
     from datetime import datetime
     r.analisado_em = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     HISTORICO.parent.mkdir(parents=True, exist_ok=True)
+    _migrar_historico()
     novo = not HISTORICO.exists()
     linha = asdict(r)
     linha["confianca"], linha["nitidez"] = f"{r.confianca:.3f}", f"{r.nitidez:.1f}"
@@ -266,12 +345,39 @@ def registrar_decisao(r):
         w.writerow(linha)
 
 
+def _ler_historico():
+    """Linhas do histórico como dicionários. Um arquivo gravado antes de uma coluna nova tem o
+    cabeçalho antigo e linhas com os dois tamanhos; cada linha é lida pelo cabeçalho do seu tamanho."""
+    with open(HISTORICO, encoding="utf-8-sig", newline="") as f:
+        linhas = list(csv.reader(f, delimiter=";"))
+    if not linhas:
+        return [], []
+    cab, saida = linhas[0], []
+    for l in linhas[1:]:
+        campos = CAMPOS_HISTORICO if len(l) == len(CAMPOS_HISTORICO) else cab
+        if len(l) == len(campos):
+            saida.append(dict(zip(campos, l)))
+    return cab, saida
+
+
+def _migrar_historico():
+    """Regrava o histórico com o cabeçalho atual se ele foi criado com outras colunas."""
+    if not HISTORICO.exists():
+        return
+    cab, linhas = _ler_historico()
+    if cab == CAMPOS_HISTORICO:
+        return
+    with open(HISTORICO, "w", encoding="utf-8-sig", newline="") as f:
+        w = csv.DictWriter(f, fieldnames=CAMPOS_HISTORICO, delimiter=";", extrasaction="ignore", restval="")
+        w.writeheader()
+        w.writerows(linhas)
+
+
 def carregar_historico():
     """Decisões do histórico, a mais recente de cada foto primeiro. Devolve [Resultado]."""
     if not HISTORICO.exists():
         return []
-    with open(HISTORICO, encoding="utf-8-sig", newline="") as f:
-        linhas = list(csv.DictReader(f, delimiter=";"))
+    _, linhas = _ler_historico()
     vistos, saida = set(), []
     for l in sorted(linhas, key=lambda l: l["analisado_em"], reverse=True):
         chave = (l["lote"], l["arquivo"])

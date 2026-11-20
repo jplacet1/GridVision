@@ -1,0 +1,33 @@
+<View style="display: flex; gap: 24px; align-items: flex-start;">
+  <View style="flex: 0 0 60%; max-width: 760px;">
+    <Header value="Recorte do visor (ampliado)"/>
+    <Image name="foto" value="$image" zoom="true" zoomControl="true" rotateControl="false"/>
+  </View>
+  <View style="flex: 1; min-width: 260px;">
+    <Header value="1. Caixas: função e leitura"/>
+    <Text name="dica_caixas" value="Ajuste as caixas sugeridas. Função: o código à esquerda (ex.: 03). Leitura: só os dígitos do valor. Sem função no visor, marque só a leitura. Ilegível: sem caixas."/>
+    <RectangleLabels name="regiao" toName="foto" strokeWidth="2">
+      <Label value="função" background="#f59e0b" hotkey="z"/>
+      <Label value="leitura" background="#2563eb" hotkey="x"/>
+    </RectangleLabels>
+
+    <Header value="2. O que está escrito no display?"/>
+    <Text name="dica" value="Digite os dígitos na ordem, com a função separada por espaço. Ex.: 03 007237. Já vem com o que o OCR leu: corrija se precisar."/>
+    <TextArea name="texto" toName="foto" rows="1" editable="true" maxSubmissions="1" showSubmitButton="false"/>
+
+    <Header value="3. Situação"/>
+    <Choices name="situacao" toName="foto" choice="single-radio" required="true">
+      <Choice value="legível, é o consumo" hotkey="q"/>
+      <Choice value="ilegível" hotkey="w"/>
+      <Choice value="outra tela (não é o consumo)" hotkey="e"/>
+      <Choice value="não é o visor" hotkey="r"/>
+    </Choices>
+
+    <Header value="4. Tipo de visor"/>
+    <Choices name="tipo" toName="foto" choice="single-radio">
+      <Choice value="digital" hotkey="a"/>
+      <Choice value="roletes" hotkey="s"/>
+      <Choice value="ponteiros" hotkey="d"/>
+    </Choices>
+  </View>
+</View>

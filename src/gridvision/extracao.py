@@ -19,9 +19,18 @@ Fluxo (decidido em 18/10/2026, ver docs/contexto.md):
    aceita (o display mostra outra coisa, como data ou hora) e a foto vai ao analista.
 5. Confiança: a menor entre a confiança do OCR na leitura e no número. O limiar fica no app.
 
+Motor ONNX (06/11/2026, experiments/ensemble_ocr): os modelos PP-OCRv6 medium e PP-OCRv5 mobile convertidos
+para ONNX, no ONNX Runtime (GPU via DirectML, ou CPU), com três passes por motor: foto inteira, recorte do
+visor e recorte da placa. O fiscal junta os candidatos de todos os passes (é verificação: o valor do CSV
+aparece em algum?). Nas 100 fotos de validação: 18 Confere contra 10 do PaddleOCR v6 só na foto, sem erro de
+leitura, e cerca de 1 s de OCR por foto na GPU contra 7,5 s.
+
 Configuração por variável de ambiente:
 - GRIDVISION_DETECTOR: caminho dos pesos do detector
   (padrão: ~/gridvision_dados/detector_v0/runs/v0/weights/best.pt, fora do Git).
+- GRIDVISION_OCR: "onnx" (padrão quando os modelos ONNX e o onnxruntime existem), "v6_medium" ou "v5_mobile".
+- GRIDVISION_ONNX: pasta dos modelos ONNX (padrão: ~/gridvision_dados/onnx, fora do Git).
+- GRIDVISION_GPU=0: força o ONNX na CPU.
 """
 import os, re
 from dataclasses import dataclass
@@ -36,9 +45,62 @@ MIN_DIGITOS_FORA_PLACA = 6   # número informado achado fora da placa só conta 
 # "geralmente a 03". Outros códigos podem ser acrescentados por GRIDVISION_FUNCOES_LEITURA="03,..."
 FUNCOES_LEITURA = {c.strip().zfill(2) for c in os.environ.get("GRIDVISION_FUNCOES_LEITURA", "03").split(",") if c.strip()}
 MIN_DIGITOS_COM_FUNCAO = 7   # "03" + leitura de 5 ou mais dígitos; abaixo disso não separa
+# Modelos do OCR por GRIDVISION_OCR. v6_medium é o padrão do PaddleOCR 3.7 (lang="en"), o dos experimentos.
+MODELOS_OCR = {
+    "v6_medium": {},
+    "v5_mobile": dict(text_detection_model_name="PP-OCRv5_mobile_det",
+                      text_recognition_model_name="en_PP-OCRv5_mobile_rec"),
+    "v6_det_v5_rec": dict(text_recognition_model_name="en_PP-OCRv5_mobile_rec"),
+}
+
+PASTA_ONNX = Path(os.environ.get("GRIDVISION_ONNX", Path.home() / "gridvision_dados" / "onnx"))
+# Modelos ONNX e parâmetros do detector de texto (DB), tirados do inference.yml de cada modelo
+MODELOS_ONNX = {
+    "v6onnx": dict(det="PP-OCRv6_medium_det", rec="PP-OCRv6_medium_rec"),
+    "v5onnx": dict(det="PP-OCRv5_mobile_det", rec="en_PP-OCRv5_mobile_rec"),
+}
+FOLGA_RECORTE = 0.15   # folga dos recortes de visor e placa lidos à parte
 
 _detector = None
 _ocr = None
+_ocrs_onnx = None
+
+
+def motor_ocr():
+    pedido = os.environ.get("GRIDVISION_OCR")
+    if pedido:
+        return pedido
+    import importlib.util
+    tem = importlib.util.find_spec("onnxruntime") and importlib.util.find_spec("rapidocr") and \
+        all((PASTA_ONNX / f"{m}.onnx").exists() for c in MODELOS_ONNX.values() for m in (c["det"], c["rec"]))
+    return "onnx" if tem else "v6_medium"
+
+
+def usa_gpu():
+    if os.environ.get("GRIDVISION_GPU") == "0":
+        return False
+    try:
+        import onnxruntime
+        return "DmlExecutionProvider" in onnxruntime.get_available_providers()
+    except ImportError:
+        return False
+
+
+def _criar_onnx(nome):
+    from rapidocr import RapidOCR
+    c = MODELOS_ONNX[nome]
+    return RapidOCR(params={
+        "Global.use_cls": False, "Global.text_score": 0.0, "Global.use_preprocess_img": False,
+        "Global.use_vertical_padding": False, "Global.log_level": "error",
+        "EngineConfig.onnxruntime.use_dml": usa_gpu(),
+        "Det.model_path": str(PASTA_ONNX / f"{c['det']}.onnx"),
+        "Det.limit_type": "min", "Det.limit_side_len": 64,
+        "Det.mean": [0.485, 0.456, 0.406], "Det.std": [0.229, 0.224, 0.225],
+        "Det.thresh": 0.3, "Det.box_thresh": 0.6, "Det.unclip_ratio": 1.5,
+        "Det.use_dilation": False, "Det.score_mode": "fast",
+        "Rec.model_path": str(PASTA_ONNX / f"{c['rec']}.onnx"),
+        "Rec.rec_keys_path": str(PASTA_ONNX / f"{c['rec']}_dict.txt"),
+    })
 
 
 @dataclass
@@ -48,32 +110,59 @@ class ResultadoExtracao:
     leitura: str       # vazio se não achou
     confianca: float   # 0 a 1
     detalhe: str       # texto curto para o analista e para depuração
-    prob_legivel: float = -1.0   # chance de a leitura ser legível (classificador v0); -1 se não calculada
+    prob_legivel: float = -1.0   # chance de a leitura ser legível (classificador v0 ou v1); -1 se não calculada
 
 
-# Classificador de legibilidade (experiments/legibilidade): regressão logística sobre sinais do detector
-# e do recorte do visor. Limiar de "ilegível com certeza alta" escolhido pelo grupo em 18/10/2026 (0,20);
-# outro valor com GRIDVISION_LIMIAR_ILEGIVEL.
-_LEGIB = None
+# Classificador de legibilidade (experiments/legibilidade): regressão logística.
+# v0 (18/10/2026): sinais do detector e do recorte do visor; limiar de "ilegível com certeza alta" 0,20.
+# v1 (06/11/2026): v0 + sinais do OCR (passes com dígitos no visor, confiança, concordância entre motores, dígitos
+# na placa). Só vale com o motor ONNX, cujos passes geram esses sinais. Outro limiar com GRIDVISION_LIMIAR_ILEGIVEL.
+_LEGIB = {}
 
 
-def _legibilidade():
-    global _LEGIB
-    if _LEGIB is None:
+def _legibilidade(versao=None):
+    versao = versao or ("v1" if usa_legibilidade_v1() else "v0")
+    if versao not in _LEGIB:
         import json
-        arq = Path(__file__).with_name("legibilidade_v0.json")
-        _LEGIB = json.load(open(arq, encoding="utf-8")) if arq.exists() else {}
-    return _LEGIB
+        arq = Path(__file__).with_name(f"legibilidade_{versao}.json")
+        _LEGIB[versao] = json.load(open(arq, encoding="utf-8")) if arq.exists() else {}
+    return _LEGIB[versao]
+
+
+def usa_legibilidade_v1():
+    return motor_ocr() == "onnx" and Path(__file__).with_name("legibilidade_v1.json").exists()         and os.environ.get("GRIDVISION_LEGIBILIDADE") != "v0"
 
 
 def limiar_ilegivel():
     return float(os.environ.get("GRIDVISION_LIMIAR_ILEGIVEL", _legibilidade().get("limiar_ilegivel", 0.0)))
 
 
-def prob_legivel(sinais):
+def sinais_ocr(passes, visor, placa):
+    """Sinais do classificador v1, a partir dos passes de `_passes`: no visor, quantos passes acharam dígitos,
+    a sequência mais longa, a maior confiança e se dois passes leram a mesma sequência; na placa, a sequência
+    mais longa."""
+    melhores, n_passes, max_dig, max_conf, placa_dig = [], 0, 0, 0.0, 0
+    for regiao, ts in passes:
+        if regiao != "placa" and visor is not None:
+            no_visor = ts if regiao == "visor" else [t for t in ts if _dentro(t["centro"], visor)]
+            toks = [(_digitos(t["texto"]), t["conf"]) for t in no_visor if _digitos(t["texto"])]
+            if toks:
+                n_passes += 1
+                d, c = max(toks, key=lambda x: (len(x[0]), x[1]))
+                max_dig, max_conf = max(max_dig, len(d)), max(max_conf, c)
+                melhores.append(d.lstrip("0"))
+        if regiao != "visor" and placa is not None:
+            na = ts if regiao == "placa" else [t for t in ts if _dentro(t["centro"], placa)]
+            placa_dig = max([placa_dig] + [len(_digitos(t["texto"])) for t in na])
+    concordam = int(len(melhores) >= 2 and any(melhores.count(m) >= 2 and len(m) >= 3 for m in melhores))
+    return {"ocr_passes_digitos": n_passes, "ocr_max_digitos": max_dig, "ocr_max_conf": max_conf,
+            "ocr_concordam": concordam, "ocr_placa_digitos": placa_dig}
+
+
+def prob_legivel(sinais, versao=None):
     """P(leitura legível) pelos coeficientes gravados; -1 se o classificador não estiver disponível."""
     import math
-    m = _legibilidade()
+    m = _legibilidade(versao)
     if m.get("modelo") != "logistica":
         return -1.0
     z = m["intercepto"]
@@ -101,16 +190,28 @@ def motivo_indisponivel():
 
 
 def _carregar():
-    global _detector, _ocr
+    global _detector, _ocr, _ocrs_onnx
+    # Números com ponto decimal para o código em C (OpenCV, ONNX Runtime, Paddle). O ttkbootstrap troca o locale
+    # do processo para pt-BR (vírgula decimal) ao ser importado, e com isso o OCR do app perdia Confere (06/11/2026:
+    # 6 contra 8 no lote_demo3).
+    import locale
+    locale.setlocale(locale.LC_NUMERIC, "C")
     if _detector is None:
         from ultralytics import YOLO
         _detector = YOLO(str(caminho_pesos()))
+    if motor_ocr() == "onnx":
+        if _ocrs_onnx is None:
+            _ocrs_onnx = {m: _criar_onnx(m) for m in MODELOS_ONNX}
+        return
     if _ocr is None:
         import warnings; warnings.filterwarnings("ignore")
         from paddleocr import PaddleOCR
         # enable_mkldnn=False: com o PaddlePaddle 3.3 em CPU, sem isso a inferência falha em silêncio
+        # GRIDVISION_THREADS_OCR: threads de CPU do OCR (o app divide as threads entre os processos paralelos)
+        threads = {"cpu_threads": int(os.environ["GRIDVISION_THREADS_OCR"])} if os.environ.get("GRIDVISION_THREADS_OCR") else {}
         _ocr = PaddleOCR(use_doc_orientation_classify=False, use_doc_unwarping=False,
-                         use_textline_orientation=False, lang="en", enable_mkldnn=False)
+                         use_textline_orientation=False, lang="en", enable_mkldnn=False, **threads,
+                         **MODELOS_OCR.get(os.environ.get("GRIDVISION_OCR", "v6_medium"), {}))
 
 
 def _digitos(s):
@@ -199,6 +300,48 @@ def sinais_legibilidade(img, melhor):
     return s
 
 
+def _ler_textos(img, x0=0.0, y0=0.0, ocr=None):
+    """OCR na imagem ampliada, com a posição de cada texto de volta à escala da foto original."""
+    import cv2
+    grande = cv2.resize(img, None, fx=FATOR_AMPLIACAO, fy=FATOR_AMPLIACAO, interpolation=cv2.INTER_CUBIC)
+    if ocr is not None:   # ONNX (RapidOCR)
+        r = ocr(grande)
+        trios = [] if r.boxes is None else zip(r.txts, r.scores, r.boxes)
+    else:
+        o = _ocr.predict(grande)[0]
+        trios = zip(o["rec_texts"], o["rec_scores"], o["rec_polys"])
+    textos = []
+    for t, s, poly in trios:
+        xs = [x0 + p[0] / FATOR_AMPLIACAO for p in poly]; ys = [y0 + p[1] / FATOR_AMPLIACAO for p in poly]
+        textos.append({"texto": t, "conf": float(s), "x": float(min(xs)),
+                       "centro": (sum(xs) / len(xs), sum(ys) / len(ys))})
+    return textos
+
+
+def _recorte(img, caixa):
+    h, w = img.shape[:2]
+    x0, y0, x1, y1 = caixa
+    fx, fy = FOLGA_RECORTE * (x1 - x0), FOLGA_RECORTE * (y1 - y0)
+    x0, y0 = max(0, int(x0 - fx)), max(0, int(y0 - fy))
+    return img[y0:min(h, int(y1 + fy)), x0:min(w, int(x1 + fx))], x0, y0
+
+
+def _passes(img, visor, placa):
+    """[(região, textos)]: 'foto' (foto inteira, textos com posição) e, no ONNX, 'visor' e 'placa'
+    (recortes lidos à parte: tudo o que sair deles pertence à região)."""
+    if _ocrs_onnx is None:
+        return [("foto", _ler_textos(img))]
+    saida = []
+    for ocr in _ocrs_onnx.values():
+        saida.append(("foto", _ler_textos(img, ocr=ocr)))
+        for regiao, caixa in (("visor", visor), ("placa", placa)):
+            if caixa is not None:
+                r, x0, y0 = _recorte(img, caixa)
+                if r.size:
+                    saida.append((regiao, _ler_textos(r, x0, y0, ocr=ocr)))
+    return saida
+
+
 def extrair(caminho, informado=None):
     """`informado` = (numero, leitura) do CSV, ou None. Nunca lança erro por foto ruim: devolve vazio."""
     import cv2
@@ -211,27 +354,26 @@ def extrair(caminho, informado=None):
     melhor = detectar(img)
     if "medidor" not in melhor and "visor" not in melhor:
         return ResultadoExtracao(False, "", "", 1.0, "detector não achou medidor")
-    p_leg = prob_legivel(sinais_legibilidade(img, melhor))
+    sinais = sinais_legibilidade(img, melhor)
     visor = melhor.get("visor", (None, 0))[0]
     placa = melhor.get("placa", (None, 0))[0]
 
-    # 2. OCR na foto inteira ampliada, com a posição de cada texto (de volta à escala original)
-    grande = cv2.resize(img, None, fx=FATOR_AMPLIACAO, fy=FATOR_AMPLIACAO, interpolation=cv2.INTER_CUBIC)
-    o = _ocr.predict(grande)[0]
-    textos = []
-    for t, s, poly in zip(o["rec_texts"], o["rec_scores"], o["rec_polys"]):
-        xs = [p[0] / FATOR_AMPLIACAO for p in poly]; ys = [p[1] / FATOR_AMPLIACAO for p in poly]
-        textos.append({"texto": t, "conf": float(s), "x": min(xs),
-                       "centro": (sum(xs) / len(xs), sum(ys) / len(ys))})
+    # 2. OCR: um ou mais passes, cada um com a posição dos textos na foto original
+    passes = _passes(img, visor, placa)
+    if usa_legibilidade_v1():
+        sinais.update(sinais_ocr(passes, visor, placa))
+    p_leg = prob_legivel(sinais)
+    textos = [t for regiao, ts in passes if regiao == "foto" for t in ts]
 
     num_inf, leit_inf = informado or ("", "")
     partes = [f"visor {melhor['visor'][1]:.2f}" if visor else "sem visor",
               f"placa {melhor['placa'][1]:.2f}" if placa else "sem placa"]
 
-    # 3a. leitura: só dentro do visor
+    # 3a. leitura: só dentro do visor (candidatos de cada passe separados: não se juntam textos de passes diferentes)
     leitura, conf_l = "", 0.0
     if visor is not None:
-        cands = _leituras_do_visor([t for t in textos if _dentro(t["centro"], visor)])
+        cands = [c for regiao, ts in passes if regiao != "placa"
+                 for c in _leituras_do_visor(ts if regiao == "visor" else [t for t in ts if _dentro(t["centro"], visor)])]
         alvo = _digitos(leit_inf).lstrip("0")
         iguais = [x for x in cands if alvo and x[0].lstrip("0") == alvo]
         # preferências: igual ao informado; função de consumo explícita; sequência mais longa
@@ -255,11 +397,18 @@ def extrair(caminho, informado=None):
     # 3b. número do medidor: na placa; fora dela só se longo e inteiro
     numero, conf_n = "", 0.0
     alvos = [_digitos(m) for m in (num_inf or "").split("/") if _digitos(m)]
-    na_placa = _candidatos([t for t in textos if _dentro(t["centro"], placa)]) if placa is not None else []
+    na_placa = [c for regiao, ts in passes if regiao != "visor" and placa is not None
+                for c in _candidatos(ts if regiao == "placa" else [t for t in ts if _dentro(t["centro"], placa)])]
     # devolve o número que foi LIDO, não o texto informado (que pode trazer vários medidores "a/b/c")
     for d, c in na_placa:
         if d in alvos and c > conf_n:
             numero, conf_n = d, c
+    # na placa, um número informado longo contido num texto maior também vale (o OCR grudou outro texto nele)
+    if not numero:
+        for d, c in na_placa:
+            achado = next((a for a in alvos if len(a) >= MIN_DIGITOS_FORA_PLACA and a in d), None)
+            if achado and c > conf_n:
+                numero, conf_n = achado, c
     if not numero:
         for t in textos:
             d = _digitos(t["texto"])
@@ -273,7 +422,8 @@ def extrair(caminho, informado=None):
     if not numero and na_placa:
         numero, conf_n = max(na_placa, key=lambda x: (len(x[0]), x[1]))
 
-    confianca = min(conf_l, conf_n) if leitura and numero else 0.0
+    # sem número, vale a confiança da leitura: leitura que confere vai ao analista já preenchida
+    confianca = min(conf_l, conf_n) if leitura and numero else conf_l if leitura else 0.0
     if p_leg >= 0:
         partes.append(f"chance de legível {p_leg:.0%}")
     return ResultadoExtracao(True, numero, leitura, round(confianca, 3), ", ".join(partes), round(p_leg, 3))
