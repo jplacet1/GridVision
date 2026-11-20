@@ -147,3 +147,4 @@ A meta é resolver 50% das leituras sem analista, com erro zero. Medido em 200 f
 | 17 | Termo "ACR" nas notas do atendimento de 17/10 (condição para a disciplina ser considerada entregue). Provável erro de fala ou transcrição | Grupo, confirmar com o professor |
 | 18 | Códigos de função de consumo do display além do 03 (o grupo disse "geralmente a 03") | Grupo |
 | Data Understanding | Completar o documento do Drive (coluna de imagens vazia, EDA do SR1 fora dele) | João Pedro |
+| Notion só | Dois itens do Kanban do Notion não estão na checklist: "Escolher a métrica oficial do número do medidor (38% igual ou 42% contido)" e "Investigar fotos sem registro no CSV (sufixo _001 a _008)". Decidir se entram e com que prioridade (20/11/2026). O Kanban também marcava o valor-alvo das métricas como concluído; voltou a não iniciado em 20/11, porque o item 11 segue a fazer | João Pedro |

@@ -60,7 +60,7 @@ Status: `feito`, `pendente`, `bloqueado` (depende de terceiros), `cancelado` (fo
 | 10g | F2 | Acelerar o app: comparar PP-OCRv5 mobile com v6 medium e processar fotos em paralelo. Comparação feita em 06/11 (v5 mobile 2,7 s por foto, mesma cobertura). Em 06/11: OCR em ONNX na GPU (1,1 s por foto de ponta a ponta, 30% resolvidas) e 4 fotos em paralelo no app (lote_demo3: 14,7 s com GPU e 4 processos, contra cerca de 5 min em 24/10) | João Pedro | feito |
 | 10i | F2 | Classificador de legibilidade e status "Ilegível (certeza alta)" no app (limiar 0,20). Falta o grupo definir o destino das fotos excluídas | João Pedro | feito |
 | 10j | F2 | Conferir à mão os 10 "Confere" automáticos do lote_demo2 (prova do erro zero). Feito em 23/10: 10 de 10 certos | João Pedro | feito |
-| 10h | F2 | Abrir e mesclar os PRs das branches `docs/guia-do-grupo` e `docs/baseline-ocr`; atualizar o Notion com o trabalho de 18/10 | João Pedro | pendente |
+| 10h | F2 | Abrir e mesclar os PRs das branches `docs/guia-do-grupo` e `docs/baseline-ocr`; atualizar o Notion com o trabalho de 18/10 | João Pedro | em andamento |
 | 11 | F2 | Definir valor-alvo de localização, acerto exato da leitura e segurança, e pedir validação à Neoenergia pelo professor Erick. Se a resposta não vier, seguir com o valor do grupo e registrar como não validado | Grupo | pendente |
 | 12 | F3 | Refinar modelos e analisar erros: reconhecedor próprio do visor (ajuste fino com recortes legíveis), comparar EasyOCR e Tesseract, melhorar a placa no detector. EasyOCR e Tesseract comparados em 06/11: perdem para o PaddleOCR | Grupo | pendente |
 | 12a | F3 | Transcrever os 500 recortes do visor com as caixas de função e leitura (kit pronto em 24/10) e retreinar o leitor de dígitos | Grupo | pendente |

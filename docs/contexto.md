@@ -54,6 +54,7 @@ Cronograma completo: `Cronograma_CRISP_DM_Projeto_4.pdf` na pasta do Drive. É o
 - [Repositório](https://github.com/jplacet1/GridVision)
 - [Experimento de OCR 1](https://claude.ai/artifact/5ebXfTqPCAmeJuMRWBxqPN) e [Piloto e detector v0](https://claude.ai/artifact/4bH2TJ3D2u9Ljiovfr6dEd) (artefatos do Claude com os resultados de 17 e 18/10; privados, compartilhar pelo Share)
 - [Pesos dos modelos](https://drive.google.com/drive/folders/1pY8Pf2UKYni9dTRk2MaTq2SFiIvcm9ru) (pasta "GridVision modelos" no Drive pessoal do João Pedro, criada em 24/10/2026, pedido do professor): uma subpasta por versão, nunca sobrescrever, com `MANIFESTO.txt` (SHA-256, dados de treino, métricas). Só pesos e métricas, nada de fotos
+- [Tarefas do GridVision](https://claude.ai/artifact/FeAAptM1vMPiDHF3AJX3Eu) (checklist com status e prioridade, salva para o grupo; sincronizada com o Kanban do Notion pela skill `tarefas`) e [Arquitetura do GridVision](https://claude.ai/artifact/7az4LqEcjjub8X27T5vHFy) (fluxograma clicável do pipeline), artefatos do Claude criados em 20/11/2026; privados, compartilhar pelo Share (Contribuidor para marcar tarefas)
 - [Design system do GridVision](https://claude.ai/artifact/QE97oYdBevqSvzrTb9VWj5) (artefato do Claude; o Claude de qualquer integrante lê por esse link. Se não abrir, peça ao João Pedro para compartilhar)
 
 ## Dados (números da EDA apresentados no SR1)
@@ -176,6 +177,7 @@ Conferidos em 03/10/2026 contra o zip original (`Base de Dados Neoenergia PE.zip
 ### 20/11/2026
 
 - **Revisão da checklist (João Pedro).** Cancelados: consultar o professor Galindo sobre aprender com as correções (12d) e mostrar o app ao professor Paulo (12e). Integração do modelo no MVP com tela de revisão (15) dada como concluída. O item 10d (ampliação 2x em ~300 fotos) foi trocado por conferir à mão os 63 Confere do `lote_demo6`, porque a ampliação já está no app e a curva de cobertura já foi medida; falta provar o erro zero numa amostra maior. Os itens 11 (valor-alvo das métricas) e 12a (transcrição dos 500 recortes) seguem a fazer.
+- **Ordem de prioridade das tarefas abertas (João Pedro, 20/11/2026):** 1) 12a transcrição dos recortes; 2) 10d conferir os 63 Confere; 3) 11 valor-alvo das métricas; 4) 12h novo limiar; 5) 16 pipeline e testes; 6) 10h PRs e Notion (em andamento); 7) 12c miniaturas e ícones; 8) 12 refino dos modelos; 9) 13 teste temporal; 10) 14 arquitetura final; 11) 17 avaliação ponta a ponta; 12) 18 apresentação. Critério: primeiro o trabalho manual mais longo e o que destrava o resto, depois as decisões, depois código. A checklist das tarefas fica sincronizada em três lugares (artefato de checklist, Kanban do Notion e `proximo-passo.md`) pela skill `.claude/skills/tarefas`.
 
 ## Ambiente local (fora do Git)
 
