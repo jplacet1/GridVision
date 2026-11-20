@@ -14,7 +14,8 @@ Uso:  python app/main.py
 
 As fotos e o CSV ficam fora do Git (LGPD). A interface só lê da pasta local que o analista escolhe.
 """
-import json, math, queue, threading, time
+import json, math, queue, sys, threading, time
+from pathlib import Path
 import tkinter as tk
 from tkinter import filedialog, font as tkfont
 
@@ -198,6 +199,7 @@ class App(ttk.Window):
 
     def __init__(self):
         super().__init__(title="GridVision", size=(1240, 800), minsize=(1040, 660))
+        self._icone()
         self.style.register_theme(TEMA)
         self.style.theme_use("gridvision")
         self.f_display = familia(["Oxanium", "Eurostile"])
@@ -966,6 +968,21 @@ class App(ttk.Window):
             (140, 100, 220, 110, 200, 90, 90, 110, 260), "motivo")
         self.h_tabela.bind("<Double-1>", lambda e: self._abrir_da_tabela(self.h_tabela, "Histórico"))
         self.historico = []
+
+    def _icone(self):
+        """Mark do GridVision (design system) na janela, nas caixas de diálogo e na barra de tarefas."""
+        ico = Path(__file__).with_name("gridvision.ico")
+        if not ico.exists():
+            return
+        try:
+            if sys.platform == "win32":  # sem isso o Windows agrupa a janela sob o ícone do Python
+                import ctypes
+                ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID("GridVision.App")
+                self.iconbitmap(default=str(ico))
+            else:
+                self.iconphoto(True, ImageTk.PhotoImage(Image.open(ico.with_suffix(".png"))))
+        except (tk.TclError, OSError, AttributeError):
+            pass
 
     def _aprender(self):
         """Retreina o classificador de legibilidade com as decisões do histórico (com trava) e guarda as
