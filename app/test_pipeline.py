@@ -175,5 +175,36 @@ class TestFuncaoDoDisplay(unittest.TestCase):
         self.assertEqual(c, [("042884", 0.99, None)])
 
 
+
+class TestCodigoBarras(unittest.TestCase):
+    """Camada do código de barras (20/11/2026): lê o número de um Code 128 numa foto do tamanho da base."""
+
+    def setUp(self):
+        try:
+            import cv2, numpy, zxingcpp
+        except ImportError as e:
+            self.skipTest(f"sem {e.name}")
+        self.cv2, self.np, self.zx = cv2, numpy, zxingcpp
+        import sys
+        from pathlib import Path
+        sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
+        from gridvision import codigo_barras
+        self.cb = codigo_barras
+
+    def foto(self, codigo):
+        img = self.np.full((480, 360, 3), 130, self.np.uint8)
+        if codigo:
+            barras = self.np.array(self.zx.create_barcode(codigo, self.zx.BarcodeFormat.Code128).to_image(scale=1))
+            h, w = barras.shape
+            img[300:300 + h, 40:40 + w] = barras[:, :, None]
+        return img
+
+    def test_le_o_numero(self):
+        self.assertEqual(self.cb.ler(self.foto("12345678")), ["12345678"])
+
+    def test_foto_sem_codigo(self):
+        self.assertEqual(self.cb.ler(self.foto("")), [])
+
+
 if __name__ == "__main__":
     unittest.main()

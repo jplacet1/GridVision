@@ -18,6 +18,8 @@ Fluxo (decidido em 18/10/2026, ver docs/contexto.md):
    ex.: "03 007237"). O código é separado da leitura; se a função não for de consumo, a leitura não é
    aceita (o display mostra outra coisa, como data ou hora) e a foto vai ao analista.
 5. Confiança: a menor entre a confiança do OCR na leitura e no número. O limiar fica no app.
+6. Código de barras da placa (20/11/2026, experiments/passes_extras): quando decodifica, entra como mais um
+   candidato do número do medidor, com confiança CONF_CODIGO_BARRAS. Não entra nos sinais de legibilidade.
 
 Motor ONNX (06/11/2026, experiments/ensemble_ocr): os modelos PP-OCRv6 medium e PP-OCRv5 mobile convertidos
 para ONNX, no ONNX Runtime (GPU via DirectML, ou CPU), com três passes por motor: foto inteira, recorte do
@@ -38,6 +40,7 @@ from pathlib import Path
 
 PESOS_PADRAO = Path.home() / "gridvision_dados" / "detector_v0" / "runs" / "v0" / "weights" / "best.pt"
 CONF_DETECTOR = 0.25
+CONF_CODIGO_BARRAS = 0.99   # código de barras tem verificação embutida: decodificado, o número é exato
 FATOR_AMPLIACAO = 2.0
 MARGEM_CAIXA = 0.10          # folga ao checar se um texto está dentro da caixa
 MIN_DIGITOS_FORA_PLACA = 6   # número informado achado fora da placa só conta se for longo
@@ -363,6 +366,13 @@ def extrair(caminho, informado=None):
     if usa_legibilidade_v1():
         sinais.update(sinais_ocr(passes, visor, placa))
     p_leg = prob_legivel(sinais)
+    # 2b. código de barras: só para o número; entra depois dos sinais, para não mudar a chance de legível.
+    # Sem placa detectada, vira texto da foto fora de qualquer caixa (vale só o número longo, >= 6 dígitos).
+    from gridvision import codigo_barras
+    codigos = codigo_barras.ler(img)
+    if codigos:
+        lidos = [{"texto": t, "conf": CONF_CODIGO_BARRAS, "x": 0.0, "centro": (-1e6, -1e6)} for t in codigos]
+        passes = passes + [("placa" if placa is not None else "foto", lidos)]
     textos = [t for regiao, ts in passes if regiao == "foto" for t in ts]
 
     num_inf, leit_inf = informado or ("", "")
@@ -417,6 +427,8 @@ def extrair(caminho, informado=None):
                 numero, conf_n = achado, t["conf"]
         if numero:
             partes.append("número achado fora da placa")
+    if numero and any(numero in _digitos(c) for c in codigos):
+        partes.append("número no código de barras")
     if numero and len(alvos) > 1:
         partes.append(f"conferido 1 de {len(alvos)} números informados")
     if not numero and na_placa:

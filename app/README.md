@@ -43,6 +43,7 @@ A extração vem de [src/gridvision/extracao.py](../src/gridvision/extracao.py),
 4. **Função do display:** o código da função (03 = consumo) aparece à esquerda da leitura e é separado dela. Se a função não for de consumo, a leitura não é aceita. Outros códigos: `GRIDVISION_FUNCOES_LEITURA="03,..."`.
 5. **Leitura sem zeros à esquerda:** o display mostra 007237, o CSV traz 7237 (nenhuma leitura da base começa com 0). O valor lido sai no formato do CSV; o que o visor mostrava fica no motivo. O número do medidor não é alterado (o zero faz parte do identificador).
 6. **Confiança:** a menor entre a do OCR na leitura e no número.
+7. **Código de barras da placa** (desde 20/11/2026): quando decodifica (cerca de 7% das fotos), o número lido do código entra como candidato do número do medidor, com confiança 0,99. Ele tem verificação embutida, então decodificado é exato. Precisa do pacote `zxing-cpp` (está em `requirements-modelo.txt`); sem ele, a camada fica desligada. Não muda a chance de legível.
 
 O lote é processado em 4 fotos por vez, um processo para cada (outro número com `GRIDVISION_PROCESSOS`; 1 desliga o paralelo).
 
@@ -60,7 +61,7 @@ python app/main.py
 python -m unittest discover app    # testes da regra de decisão e testes funcionais
 ```
 
-Os testes funcionais ([test_funcional.py](test_funcional.py)) rodam um lote de fotos sintéticas pelo pipeline, pela exportação e pelo processamento sem interface, e abrem a janela passando por todas as telas. Com o modelo real instalado, também passam uma foto sintética pelo modelo; se existir `~/gridvision_dados/lote_demo3` (outro caminho com `GRIDVISION_LOTE_REGRESSAO`), conferem a contagem por status nas 30 fotos contra a medida de 20/11/2026 (8 Confere, 4 Diverge, 6 Revisão manual, 3 Ilegível, 8 Ilegível com certeza alta, 1 Sem medidor). Mudou o modelo ou a regra de propósito? Atualize `ESPERADO_REGRESSAO` no mesmo commit.
+Os testes funcionais ([test_funcional.py](test_funcional.py)) rodam um lote de fotos sintéticas pelo pipeline, pela exportação e pelo processamento sem interface, e abrem a janela passando por todas as telas. Com o modelo real instalado, também passam uma foto sintética pelo modelo; se existir `~/gridvision_dados/lote_demo3` (outro caminho com `GRIDVISION_LOTE_REGRESSAO`), conferem a contagem por status nas 30 fotos contra a medida de 20/11/2026 (9 Confere, 4 Diverge, 5 Revisão manual, 3 Ilegível, 8 Ilegível com certeza alta, 1 Sem medidor). Mudou o modelo ou a regra de propósito? Atualize `ESPERADO_REGRESSAO` no mesmo commit.
 
 Sem interface (pipeline de inferência para lotes, mesmo código do app):
 
