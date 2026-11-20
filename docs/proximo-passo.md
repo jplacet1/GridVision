@@ -5,7 +5,7 @@ Fonte única para responder "qual o próximo passo para avançar no GridVision?"
 ## Como responder
 
 1. Pegue a data de hoje e ache a fase correspondente na tabela de fases abaixo.
-2. Percorra a checklist na ordem. O **próximo passo** é o primeiro item com status `pendente` cuja fase seja a atual ou anterior (atrasado). Se não houver, é o primeiro `pendente` da fase seguinte.
+2. Percorra a checklist na ordem. O **próximo passo** é o primeiro item com status `pendente` ou `em andamento` cuja fase seja a atual ou anterior (atrasado). Se não houver, é o primeiro `pendente` ou `em andamento` da fase seguinte.
 3. Responda sempre neste formato, sem acrescentar outras seções:
 
 ```
@@ -36,7 +36,7 @@ Fases anteriores (Setup até SR1) estão encerradas.
 
 ## Checklist
 
-Status: `feito`, `pendente`, `bloqueado` (depende de terceiros), `cancelado` (fora do escopo; não conta como próximo passo). Atualizar junto com `contexto.md`.
+Status: `feito`, `pendente`, `em andamento` (começado, ainda não concluído), `bloqueado` (depende de terceiros), `cancelado` (fora do escopo; não conta como próximo passo). Atualizar junto com `contexto.md`.
 
 | # | Fase | Item | Responsável | Status |
 |---|---|---|---|---|
@@ -62,10 +62,10 @@ Status: `feito`, `pendente`, `bloqueado` (depende de terceiros), `cancelado` (fo
 | 10j | F2 | Conferir à mão os 10 "Confere" automáticos do lote_demo2 (prova do erro zero). Feito em 23/10: 10 de 10 certos | João Pedro | feito |
 | 10h | F2 | Abrir e mesclar os PRs das branches `docs/guia-do-grupo` e `docs/baseline-ocr`; atualizar o Notion com o trabalho de 18/10. Feito em 20/11: PR #4 mesclado (a `docs/guia-do-grupo` já estava contida na `main`) e Notion atualizado | João Pedro | feito |
 | 11 | F2 | Definir valor-alvo de localização, acerto exato da leitura e segurança, e pedir validação à Neoenergia pelo professor Erick. Se a resposta não vier, seguir com o valor do grupo e registrar como não validado | Grupo | pendente |
-| 12 | F3 | Refinar modelos e analisar erros: reconhecedor próprio do visor (ajuste fino com recortes legíveis), comparar EasyOCR e Tesseract, melhorar a placa no detector. EasyOCR e Tesseract comparados em 06/11: perdem para o PaddleOCR | Grupo | pendente |
-| 12a | F3 | Transcrever os 500 recortes do visor com as caixas de função e leitura (kit pronto em 24/10) e retreinar o leitor de dígitos | Grupo | pendente |
+| 12 | F3 | Refinar modelos e analisar erros: reconhecedor próprio do visor (ajuste fino com recortes legíveis), comparar EasyOCR e Tesseract, melhorar a placa no detector. EasyOCR e Tesseract comparados em 06/11: perdem para o PaddleOCR. Análise de erros feita em 20/11 (Claude): o gargalo é o leitor do visor e a leitura da placa, não o limiar de confiança; o refino espera a transcrição (12a) | Grupo | em andamento |
+| 12a | F3 | Transcrever os 500 recortes do visor com as caixas de função e leitura (kit pronto em 24/10) e retreinar o leitor de dígitos. Projeto 7 "GridVision transcrição do visor" criado no Label Studio local em 20/11, com os 500 recortes pré-preenchidos | Grupo | em andamento |
 | 12b | F3 | App: zoom e pan na foto da checagem e barra divisória arrastável entre foto e painel, com a posição salva entre sessões (pedido do professor, 24/10). Feito em 24/10: divisórias entre fila, foto e campos, com largura mínima dos dois lados e posição em `gridvision_dados/interface.json` | João Pedro | feito |
-| 12c | F3 | App: miniatura das fotos na lista de resultados e ícones de status além do texto (pedido do professor, 24/10) | Grupo | pendente |
+| 12c | F3 | App: miniatura das fotos na lista de resultados e ícones de status além do texto (pedido do professor, 24/10). Feito em 20/11 (Claude) | Grupo | feito |
 | 12d | F3 | Consultar o professor Galindo (MLOps, quarta) sobre aprender com as correções do analista (tempo real ou retreino periódico). Em 06/11 o retreino periódico com trava foi implementado no app (botão no Histórico; ver `contexto.md`). Cancelado em 20/11 (João Pedro) | Grupo | cancelado |
 | 12e | F3 | Mostrar o app ao professor Paulo na aula de Empreendedorismo (sexta). Cancelado em 20/11 (João Pedro) | Grupo | cancelado |
 | 12f | F3 | Versionar os pesos dos modelos (ex.: pasta no Drive). Pasta "GridVision modelos" criada em 24/10 com manifestos (ver `contexto.md`); pesos do detector v0 e do leitor v0/v1 enviados em 24/10 (tamanhos conferidos) | João Pedro | feito |
@@ -74,7 +74,7 @@ Status: `feito`, `pendente`, `bloqueado` (depende de terceiros), `cancelado` (fo
 | 13 | F4 | Avaliar no teste temporal (lote de 03/07) e escolher o modelo candidato | Grupo | pendente |
 | 14 | F4 | Fechar a arquitetura final e registrar em `contexto.md` | Grupo | pendente |
 | 15 | F5 | Iniciar a integração do modelo no MVP, com tela de revisão do analista. Adiantado: modelo ligado ao app em 18/10, com revisão, histórico e exportação. Dado como concluído pelo João Pedro em 20/11 | João Pedro | feito |
-| 16 | F6 | Pipeline de inferência e testes funcionais do MVP | Grupo | pendente |
+| 16 | F6 | Pipeline de inferência e testes funcionais do MVP. Feito em 20/11 (Claude): `app/processar.py` (lote sem interface) e `app/test_funcional.py` (lote sintético, interface e regressão no `lote_demo3`) | Grupo | feito |
 | 17 | F7 | Avaliação ponta a ponta, ajustes do MVP e documentação | Grupo | pendente |
 | 18 | SR2 | Apresentação final | Grupo | pendente |
 

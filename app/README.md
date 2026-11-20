@@ -8,7 +8,7 @@ As cinco etapas do topo são clicáveis, a qualquer momento (o contador entre pa
 
 1. **Lote:** o analista escolhe a pasta de fotos e, se tiver, o CSV com a leitura informada pelo leiturista (formato da base: `;`, colunas `Foto do medidor`, `Numero do medidor`, `Posicao do medidor lida`).
 2. **Processamento:** abre sozinha ao começar o lote. Progresso e contadores ao vivo; dá para sair dela e voltar, o lote continua.
-3. **Resultados:** o que já está resolvido. As fotos com "Confere" (alta confiança) entram aqui enquanto o lote processa; também aparecem as revisadas e as excluídas (sem medidor). Filtro por situação e por tipo de problema; duplo clique reabre a foto para corrigir.
+3. **Resultados:** o que já está resolvido. As fotos com "Confere" (alta confiança) entram aqui enquanto o lote processa; também aparecem as revisadas e as excluídas (sem medidor). Filtro por situação e por tipo de problema; duplo clique reabre a foto para corrigir. Cada linha mostra a miniatura da foto.
 4. **Revisão:** fila do que está pendente, que cresce enquanto o lote processa, com filtro por tipo de problema. Ao decidir, a próxima abre sozinha. Enter confirma.
 5. **Exportação:** CSV com status, problemas, valor lido, valor informado e decisão. Exportar todos, só os filtrados (situação, status, problema) ou as linhas selecionadas (Ctrl e Shift para várias).
 
@@ -27,6 +27,8 @@ Status possíveis:
 | Ilegível | número ou leitura não legíveis | sim |
 | Ilegível (certeza alta) | chance de a leitura ser legível abaixo do limiar, sem ter conferido. Com o motor ONNX: classificador v1 (sinais do detector e do OCR), limiar 0,40; sem ele: v0, limiar 0,20 | não: sai da fila como "Excluída (ilegível): pedir nova foto" |
 | Sem medidor | nenhum medidor na foto | não: sai da fila de revisão, mas fica na tabela e na exportação como "Excluída" |
+
+Em todas as tabelas e na revisão, o status vem com um ícone antes da palavra, além da cor: ✔ Confere, ✖ Diverge, ½ Só a leitura confere, ○ Lido, ▲ Revisão manual, ? Ilegível, Ø Ilegível (certeza alta), — Sem medidor.
 
 O limiar de confiança (0,90) é provisório. O erro tolerado nas leituras resolvidas sozinhas é zero, então o sistema só decide quando tem certeza.
 
@@ -54,8 +56,18 @@ Só a interface (extração simulada):
 ```
 pip install -r app/requirements.txt
 python app/main.py
-python -m unittest discover app    # testes da regra de decisão
+python -m unittest discover app    # testes da regra de decisão e testes funcionais
 ```
+
+Os testes funcionais ([test_funcional.py](test_funcional.py)) rodam um lote de fotos sintéticas pelo pipeline, pela exportação e pelo processamento sem interface, e abrem a janela passando por todas as telas. Com o modelo real instalado, também passam uma foto sintética pelo modelo; se existir `~/gridvision_dados/lote_demo3` (outro caminho com `GRIDVISION_LOTE_REGRESSAO`), conferem a contagem por status nas 30 fotos contra a medida de 20/11/2026 (8 Confere, 4 Diverge, 6 Revisão manual, 3 Ilegível, 8 Ilegível com certeza alta, 1 Sem medidor). Mudou o modelo ou a regra de propósito? Atualize `ESPERADO_REGRESSAO` no mesmo commit.
+
+Sem interface (pipeline de inferência para lotes, mesmo código do app):
+
+```
+python app/processar.py PASTA_DAS_FOTOS --csv informado.csv --saida D:/fora_do_git/resultados.csv
+```
+
+Grava o CSV no formato da exportação (sem decisão do analista e sem gravar no histórico) e imprime a contagem por status e quantas fotos saem sem analista. Sem `--saida`, grava `resultados.csv` na pasta das fotos; o script recusa gravar dentro do repositório (LGPD). `--processos N` muda o paralelismo.
 
 Com o modelo real (Python 3.12 recomendado; fora do repositório, ex.: `venv_app`):
 

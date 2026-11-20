@@ -48,6 +48,10 @@ TEMA = ThemeDefinition(name="gridvision", themetype="dark", colors={
 # Cor de cada status na tabela e nos cartões (sempre junto da palavra, nunca só a cor)
 COR_STATUS = {pl.CONFERE: "ok", pl.DIVERGE: "danger", pl.SO_LEITURA: "action", pl.LIDO: "action", pl.REVISAO: "warn",
               pl.ILEGIVEL: "warn", pl.ILEGIVEL_CERTO: "ink-muted", pl.SEM_MEDIDOR: "ink-muted"}
+# Ícone de cada status, sempre antes da palavra (pedido do professor, 24/10/2026): a forma distingue sem depender da cor
+ICONE_STATUS = {pl.CONFERE: "✔", pl.DIVERGE: "✖", pl.SO_LEITURA: "½", pl.LIDO: "○", pl.REVISAO: "▲",
+                pl.ILEGIVEL: "?", pl.ILEGIVEL_CERTO: "Ø", pl.SEM_MEDIDOR: "—"}
+MINIATURA = (39, 52)  # caixa da miniatura na lista de resultados (fotos da base são 360 x 480, retrato)
 ETAPAS = ["Lote", "Processamento", "Resultados", "Revisão", "Exportação"]
 
 # Situação de cada foto no lote
@@ -78,6 +82,10 @@ def duracao(segundos):
     m, s = divmod(int(segundos), 60)
     h, m = divmod(m, 60)
     return f"{h}:{m:02d}:{s:02d}" if h else f"{m}:{s:02d}"
+
+
+def rotulo_status(status):
+    return f"{ICONE_STATUS.get(status, '·')} {status}"
 
 
 def situacao(r):
@@ -211,6 +219,7 @@ class App(ttk.Window):
         # divisória arrastável: o fundo do Panedwindow aparece só na faixa entre os painéis
         self.style.configure("TPanedwindow", background=COR["border"])
         self.prefs = ler_preferencias()
+        self._miniaturas = {}  # caminho da foto: PhotoImage da lista de resultados
 
         self.pasta = tk.StringVar()
         self.csv = tk.StringVar()
@@ -323,10 +332,17 @@ class App(ttk.Window):
         cb.bind("<<ComboboxSelected>>", lambda e: cmd())
         return cb
 
-    def _tabela(self, pai, cols, nomes, larguras, estica, selecao="browse"):
+    def _tabela(self, pai, cols, nomes, larguras, estica, selecao="browse", miniatura=False):
         quadro = ttk.Frame(pai)
         quadro.pack(fill=BOTH, expand=YES)
-        tv = ttk.Treeview(quadro, columns=cols, show=HEADINGS, bootstyle=PRIMARY, selectmode=selecao)
+        tv = ttk.Treeview(quadro, columns=cols, show=(TREE, HEADINGS) if miniatura else HEADINGS,
+                          bootstyle=PRIMARY, selectmode=selecao)
+        if miniatura:  # coluna #0 guarda a miniatura; estilo próprio para a linha caber nela
+            estilo = "Miniatura." + tv.cget("style")
+            self.style.configure(estilo, rowheight=MINIATURA[1] + 4)
+            tv.configure(style=estilo)
+            tv.heading("#0", text="", anchor=W)
+            tv.column("#0", width=MINIATURA[0] + 20, stretch=False)
         for c, n, w in zip(cols, nomes, larguras):
             tv.heading(c, text=n, anchor=W)
             tv.column(c, width=w, anchor=W, stretch=(c == estica))
@@ -351,7 +367,7 @@ class App(ttk.Window):
 
     @staticmethod
     def _valores(r):
-        return (r.arquivo, situacao(r), r.status, ", ".join(r.lista_problemas) or "-",
+        return (r.arquivo, situacao(r), rotulo_status(r.status), ", ".join(r.lista_problemas) or "-",
                 r.numero_final or r.numero_lido or "-", r.leitura_final or r.leitura_lida or "-",
                 r.leitura_informada or "-", f"{r.confianca:.2f}",
                 f"{r.prob_legivel:.0%}" if r.prob_legivel >= 0 else "-", r.decisao or "-", r.motivo)
@@ -494,6 +510,7 @@ class App(ttk.Window):
             Messagebox.show_warning("Nenhuma foto .jpg ou .png na pasta.", "GridVision", parent=self)
             return
         self.resultados, self.atual = [], None
+        self._miniaturas.clear()  # lote novo: as miniaturas do anterior não voltam à tela
         self.total_lote, self.processando = len(fotos), True
         self._cancelar.clear()
         self.t_inicio = self.t_ultima = time.monotonic()
@@ -571,7 +588,7 @@ class App(ttk.Window):
                 "legivel", "decisao", "motivo"),
             ("Foto", "Situação", "Status", "Problemas", "Nº", "Leitura", "Leitura informada", "Confiança",
              "Legível", "Decisão", "Motivo"),
-            (230, 90, 140, 200, 100, 80, 110, 70, 60, 90, 240), "motivo")
+            (230, 90, 210, 200, 100, 80, 110, 70, 60, 90, 240), "motivo", miniatura=True)
         self.res_tabela.bind("<Double-1>", lambda e: self._abrir_da_tabela(self.res_tabela, "Resultados"))
         self.res_vazio = ttk.Label(t, text="", foreground=COR["ink-muted"])
 
@@ -591,7 +608,20 @@ class App(ttk.Window):
             s = situacao(r)
             if s == PENDENTE or (sit != "Todas" and s != sit) or (prob != "Todos" and prob not in r.lista_problemas):
                 continue
-            tv.insert("", END, iid=str(i), tags=(r.status,), values=self._valores(r))
+            tv.insert("", END, iid=str(i), tags=(r.status,), values=self._valores(r), image=self._miniatura(r.caminho))
+
+    def _miniatura(self, caminho):
+        """Miniatura da foto para a lista de resultados, guardada por caminho (a tabela é refeita a cada foto
+        que chega; abrir cada JPEG de novo pesaria em lotes grandes). Foto que não abre fica sem miniatura."""
+        if caminho not in self._miniaturas:
+            try:
+                im = Image.open(caminho)
+                im.draft("RGB", MINIATURA)  # JPEG já decodifica reduzido
+                im.thumbnail(MINIATURA)
+                self._miniaturas[caminho] = ImageTk.PhotoImage(im)
+            except (OSError, ValueError):
+                self._miniaturas[caminho] = ""
+        return self._miniaturas[caminho]
 
     def _abrir_da_tabela(self, tv, origem):
         sel = tv.focus()
@@ -632,7 +662,7 @@ class App(ttk.Window):
         self.fila_tv.heading("arquivo", text="Foto pendente", anchor=W)
         self.fila_tv.heading("status", text="Status", anchor=W)
         self.fila_tv.column("arquivo", width=200, anchor=W)
-        self.fila_tv.column("status", width=100, anchor=W, stretch=False)
+        self.fila_tv.column("status", width=150, anchor=W, stretch=False)
         for s, c in COR_STATUS.items():
             self.fila_tv.tag_configure(s, foreground=COR[c])
         rol = ttk.Scrollbar(quadro, orient=VERTICAL, command=self.fila_tv.yview)
@@ -753,7 +783,7 @@ class App(ttk.Window):
         sel = tv.selection()
         tv.delete(*tv.get_children())
         for i, r in pend:
-            tv.insert("", END, iid=str(i), tags=(r.status,), values=(r.arquivo, r.status))
+            tv.insert("", END, iid=str(i), tags=(r.status,), values=(r.arquivo, rotulo_status(r.status)))
         # marca na lista a foto aberta (só se for uma pendente deste lote)
         if self.atual is not None and any(r is self.atual for _, r in pend):
             iid = str(next(i for i, r in pend if r is self.atual))
@@ -806,7 +836,7 @@ class App(ttk.Window):
         else:
             self.bt_voltar.pack_forget()
         self.txt_arquivo.configure(text=f"{r.lote} / {r.arquivo}" if r.lote else r.arquivo)
-        self.txt_status.configure(text=r.status + (f"  ·  {r.decisao}" if r.decisao else ""),
+        self.txt_status.configure(text=rotulo_status(r.status) + (f"  ·  {r.decisao}" if r.decisao else ""),
                                   foreground=COR[COR_STATUS.get(r.status, "ink")])
         self.txt_problemas.configure(text=" · ".join(r.lista_problemas))
         self.txt_motivo.configure(text=r.motivo)
@@ -896,7 +926,7 @@ class App(ttk.Window):
                 "legivel", "decisao", "motivo"),
             ("Foto", "Situação", "Status", "Problemas", "Nº", "Leitura", "Leitura informada", "Confiança",
              "Legível", "Decisão", "Motivo"),
-            (230, 90, 140, 200, 100, 80, 110, 70, 60, 90, 240), "motivo", selecao="extended")
+            (230, 90, 210, 200, 100, 80, 110, 70, 60, 90, 240), "motivo", selecao="extended")
         self.exp_tabela.bind("<<TreeviewSelect>>", lambda e: self._contar_exportacao())
 
     def _filtrados_exportacao(self):
@@ -965,7 +995,7 @@ class App(ttk.Window):
             t, ("quando", "lote", "arquivo", "status", "problemas", "decisao", "leitura", "informado", "motivo"),
             ("Analisado em", "Lote", "Foto", "Status", "Problemas", "Decisão", "Leitura final", "Leitura informada",
              "Motivo"),
-            (140, 100, 220, 110, 200, 90, 90, 110, 260), "motivo")
+            (140, 100, 220, 210, 200, 90, 90, 110, 260), "motivo")
         self.h_tabela.bind("<Double-1>", lambda e: self._abrir_da_tabela(self.h_tabela, "Histórico"))
         self.historico = []
 
@@ -1047,7 +1077,7 @@ class App(ttk.Window):
                     and (not busca or busca in r.arquivo.lower() or busca in r.lote.lower())):
                 vis.append(r)
                 tv.insert("", END, iid=str(i), tags=(r.status,), values=(
-                    r.analisado_em, r.lote, r.arquivo, r.status, ", ".join(r.lista_problemas) or "-", r.decisao,
+                    r.analisado_em, r.lote, r.arquivo, rotulo_status(r.status), ", ".join(r.lista_problemas) or "-", r.decisao,
                     r.leitura_final or "-", r.leitura_informada or "-", r.motivo))
         cont = {d: sum(1 for r in vis if r.decisao == d) for d in ("Confirmado", "Corrigido", "Ilegível")}
         self.h_resumo.configure(text=f"{len(vis)} de {len(self.historico)} fotos  ·  "
