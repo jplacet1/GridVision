@@ -39,10 +39,13 @@ Depois:
 | `docs/proximo-passo.md` | Fases do cronograma e checklist com responsável e status |
 | `docs/inconsistencias.md` | Conflitos entre documentos e pendências abertas |
 | `docs/fontes/` | Resumos fiéis dos documentos do Drive, Notion, Site e Classroom. Índice em [fontes/README.md](fontes/README.md) |
-| `.claude/skills/` | Skills do projeto (hoje: `salvar-contexto`) |
+| `.claude/skills/` | Skills do projeto: `salvar-contexto` e `tarefas` |
+| `app/` | App desktop, pipeline do lote, processamento sem interface (`processar.py`) e testes. Como rodar: [app/README.md](../app/README.md) |
+| `src/gridvision/` | Extração (detector, OCR, fiscal, legibilidade) e aprendizado com as decisões |
+| `experiments/` | Um experimento por pasta, com script e README de resultados agregados |
 | `README.md` | Apresentação geral do projeto |
 
-Pastas de código (`src/`, `notebooks/`, `experiments/`, `app/`) ainda não existem. Crie quando precisar, seguindo o plano do [README](../README.md). Dados ficam fora, em `data/` ou `dados/` (ignoradas pelo Git) ou, melhor, fora da pasta do repositório.
+Dados ficam fora, em `data/` ou `dados/` (ignoradas pelo Git) ou, melhor, fora da pasta do repositório.
 
 ## 4. Dados da Neoenergia (LGPD)
 
@@ -116,26 +119,17 @@ Para duas pessoas não editarem o mesmo trecho: combine no grupo quem mexe em `c
 
 Não registre: conversa solta, tentativa que falhou sem lição, segredos, tokens, dados pessoais.
 
-## 8. O que está em jogo agora (04/10/2026)
+## 8. O que está em jogo agora
 
-Fase atual: **F1 Refinamento pós-SR1 (04/10 a 16/10)**. Itens por responsável, conforme [proximo-passo.md](proximo-passo.md):
+A lista viva de tarefas, com status e responsável, está em [proximo-passo.md](proximo-passo.md). Pergunte ao Claude "qual o próximo passo" e ele responde a partir dela. As tarefas também aparecem no Kanban do Notion e no artefato de tarefas, sincronizados.
 
-- **Henrique:** dizer se o teste de legibilidade dos dígitos (19/09) foi feito e o resultado; enviar o script e os resultados completos do baseline PaddleOCR de 02/10 (MLOps e Deep Learning dependem disso).
-- **João Pedro:** completar o Data Understanding do Drive.
-- **Alana:** ainda sem item nominal. Combinem no grupo (sugestões: piloto de anotação de caixas, planejamento dos experimentos).
-- **Grupo:** analisar o feedback do SR1, piloto de anotação de caixas (medidor, ID e visor), planejar experimentos, mandar perguntas à Neoenergia pelo professor Erick, limpar cópias duplicadas no Drive.
+Datas que restam até a entrega (detalhes em [contexto.md](contexto.md), seção Marcos):
 
-Prazos de disciplinas que usam o projeto (detalhes em [contexto.md](contexto.md)):
-
-| Entrega | Prazo |
+| O quê | Quando |
 |---|---|
-| MLOps AV1, repositório (tag `sr1`) | 06/10 às 23:59 |
-| MLOps AV1, apresentação | 07/10 às 19:00 |
-| Deep Learning, Lab 02 | 08/10 às 23:59 |
-| Atendimento com o professor | 17/10, 10:30 |
-| SR2 (entrega final) | 05/12 |
-
-O cliente (Neoenergia) não é acessível diretamente. Perguntas passam pela CESAR, a começar pelo professor Erick, e a resposta pode não vir.
+| Atendimento com o professor | 21/11, 11:30 a 12:15 |
+| Atendimento com o professor | 28/11, 10:30 a 11:15 |
+| SR2 (entrega final) | 05/12, chegada às 9:00 |
 
 ## 9. Problemas comuns
 
@@ -151,6 +145,5 @@ O cliente (Neoenergia) não é acessível diretamente. Perguntas passam pela CES
 
 ## Pendências deste guia
 
-- **Skill versionada.** `.claude/` está ignorado no `.gitignore`. Para Alana e Henrique terem `/salvar-contexto`, é preciso versionar só `.claude/skills/` (mantendo `settings.local.json` ignorado). Sem isso, eles copiam a pasta à mão.
 - **Papel da Alana.** Não há item nominal dela em `proximo-passo.md`. Definir no grupo e registrar lá.
-- **Ambiente Python.** Não há `requirements.txt` ainda. Quando o primeiro código entrar, registrar a versão do Python e as dependências.
+- **Ambiente Python.** As dependências do app estão em `app/requirements.txt` (só interface) e `app/requirements-modelo.txt` (com o modelo); Python 3.12 recomendado. Os experimentos usam ambientes próprios, descritos no README de cada um.

@@ -2,15 +2,15 @@
 
 Levantamento feito em 03/10/2026 comparando os 10 documentos em [fontes/](fontes/). Nada aqui é decisão oficial: cada item precisa ser resolvido pelo grupo e, depois, registrado em [contexto.md](contexto.md).
 
-## Situação dos 15 itens (atualizado em 03/10/2026)
+## Situação dos itens (atualizado em 20/11/2026)
 
 | # | Item | Situação | Onde ficou registrado |
 |---|---|---|---|
 | 1 | Pivô do problema | Resolvido: vale o SR1 | contexto.md, Decisões |
-| 2 | Teste de 19/09 | Em aberto (responsável: Henrique) | contexto.md, Decisões |
+| 2 | Teste de 19/09 | Resolvido em 05/10/2026: é o baseline PaddleOCR de 02/10 | contexto.md, Decisões |
 | 3 | Meta de automação | Resolvido: 50% é piso, validado pela Neoenergia. Demais metas provisórias | contexto.md, Decisões |
 | 4 | Rotulagem e tabela de evidência | Resolvido por substituição: pertenciam ao desenho antigo. Piloto de anotação de caixas é o próximo passo do SR1 | contexto.md |
-| 5 | Volume e gatilho | Parcial: faixa 50 a 70 mil registrada. Unidade e gatilho pendentes com a Neoenergia | Pendências |
+| 5 | Volume e gatilho | Resolvido em 17/10/2026 pelo grupo: 70 mil leituras por mês chegam aos analistas; foto em toda visita. Não validado por escrito com a Neoenergia | contexto.md, Projeto |
 | 6 | O "92%" | Resolvido em 03/10/2026 contra a base: vale a definição da Ideação (92,0%); a do slide de 29/08 está errada (4,9%) | contexto.md, Dados |
 | 7 | Formato e tamanho da base | Resolvido em 03/10/2026: CSVs com `;` e dicionário xlsx, todos os números do SR1 batem | contexto.md, Dados |
 | 8 | Classes de I2 contra detector | Resolvido pelo item 1: I2 descartada. Arquitetura final em aberto até o SR2 | contexto.md |
@@ -18,10 +18,11 @@ Levantamento feito em 03/10/2026 comparando os 10 documentos em [fontes/](fontes
 | 10 | Nome do João Pedro | Resolvido | contexto.md, Grupo |
 | 11 | Identificação da disciplina | Resolvido | contexto.md, Projeto |
 | 12 | Descrição do problema | Resolvido pelo item 1 | contexto.md, Projeto |
-| 13 | Perguntas ao cliente D1 a D5 | Pendente com a Neoenergia | Pendências |
+| 13 | Perguntas ao cliente D1 a D5 | D1 a D5 resolvidos em 17/10/2026. Seguem abertas as perguntas da BU (tempo médio, tipos de medidor, precisão aceitável) | contexto.md, Projeto; Pendências |
 | 14 | Ordem das verificações | Resolvido pelo item 1 (ordem do desenho antigo não vale) | fontes/README.md |
-| 15 | Arquivos duplicados | Pendente: ação no Drive | Pendências |
+| 15 | Arquivos duplicados | Resolvido em 24/10/2026: cópias apagadas | proximo-passo.md, item 6 |
 | 16 | Notion desatualizado desde 30/08 (status, fases após o SR1, tarefas) | Resolvido em 03/10/2026. Sobram 2 divergências pequenas | fontes/notion.md |
+| 16b | Meta de 50% acima do teto de legibilidade (seção 16 abaixo) | Resolvido: negar a foto ilegível com certeza alta conta como resolvida (23/10/2026) e o Confere exige leitura e número (24/10/2026). A revisão cega de 11/11 mostrou que parte das negadas tem salvação; o novo limiar é o item 12h | contexto.md, 24/10 e 11/11 |
 
 Os itens abaixo continuam descritos como foram encontrados. Leia junto com a tabela acima.
 
@@ -141,10 +142,7 @@ A meta é resolver 50% das leituras sem analista, com erro zero. Medido em 200 f
 | Item | O que falta | Responsável sugerido |
 |---|---|---|
 | 13 | Perguntas da BU (tempo médio de análise, tipos de medidor mais frequentes, precisão aceitável, o que fica sempre humano). D1 a D5, volume e gatilho da foto foram esclarecidos pelo grupo em 17/10/2026 | Grupo, com a Neoenergia |
-| 15 | Escolher a versão oficial do Kickoff e do SR1 e apagar as cópias em Apresentações ("Copy of ...") | Grupo |
-| Metas | Definir valor-alvo para localização, acerto exato da leitura e segurança, e validar com a Neoenergia | Grupo, antes do SR2 |
-| 16 | Meta de 50% sem analista contra o teto medido de 46% (leitura e número legíveis juntos) ou 56% (só leitura). Em parte resolvido em 23/10/2026: negar automaticamente a foto ilegível com certeza alta também conta como resolvida, então o teto de 46% ou 56% deixa de limitar a meta. Falta decidir se o Confere exige o número do medidor ou só a leitura | Grupo, levar ao professor em 24/10 |
+| Metas | Definir valor-alvo para localização, acerto exato da leitura e segurança, e validar com a Neoenergia (item 11 da checklist) | Grupo, antes do SR2 |
 | 17 | Termo "ACR" nas notas do atendimento de 17/10 (condição para a disciplina ser considerada entregue). Provável erro de fala ou transcrição | Grupo, confirmar com o professor |
 | 18 | Códigos de função de consumo do display além do 03 (o grupo disse "geralmente a 03") | Grupo |
-| Data Understanding | Completar o documento do Drive (coluna de imagens vazia, EDA do SR1 fora dele) | João Pedro |
 | Notion só | Dois itens do Kanban do Notion não estão na checklist: "Escolher a métrica oficial do número do medidor (38% igual ou 42% contido)" e "Investigar fotos sem registro no CSV (sufixo _001 a _008)". Decidir se entram e com que prioridade (20/11/2026). O Kanban também marcava o valor-alvo das métricas como concluído; voltou a não iniciado em 20/11, porque o item 11 segue a fazer | João Pedro |

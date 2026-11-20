@@ -1,6 +1,6 @@
 # Interface do GridVision (protótipo)
 
-Protótipo desktop em ttkbootstrap, com o fluxo completo do analista. A escolha entre desktop e web ainda está em aberto (pauta do atendimento de 24/10, ver `docs/contexto.md`).
+Protótipo desktop em ttkbootstrap, com o fluxo completo do analista. O app é desktop por decisão de 23/10/2026: uso interno e implantação mais simples que um serviço web (ver `docs/contexto.md`).
 
 ## Fluxo
 
@@ -14,14 +14,15 @@ As cinco etapas do topo são clicáveis, a qualquer momento (o contador entre pa
 
 **Histórico** (no topo): todas as decisões do analista, de todos os lotes, com filtro por decisão, status e tipo de problema e busca por foto ou lote. Duplo clique reabre a foto para revisar de novo. Cada decisão é gravada na hora em `~/gridvision_dados/historico/historico.csv` (fora do Git; outro caminho com `GRIDVISION_HISTORICO`); revisar de novo acrescenta uma linha, e vale a mais recente.
 
-Tipos de problema (filtro em Resultados, Revisão, Exportação e Histórico): sem medidor, visor não encontrado, placa não encontrada, leitura não lida, número não lido, display em outra função, leitura diferente da informada, confiança baixa, foto borrada, sem leitura informada. Uma foto pode ter mais de um.
+Tipos de problema (filtro em Resultados, Revisão, Exportação e Histórico): sem medidor, ilegível com certeza alta, visor não encontrado, placa não encontrada, leitura não lida, número não lido, display em outra função, leitura diferente da informada, número diferente do informado, confiança baixa, foto borrada, sem leitura informada. Uma foto pode ter mais de um.
 
 Status possíveis:
 
 | Status | Quando | Vai ao analista? |
 |---|---|---|
-| Confere | leitura da foto igual à informada (ignorando zeros à esquerda) e confiança alta | não |
-| Diverge | leitura da foto diferente da informada | sim |
+| Confere | leitura (ignorando zeros à esquerda) e número do medidor lidos na foto iguais aos informados, com confiança de 0,90 ou mais (regra de 24/10/2026) | não |
+| Diverge | leitura ou número do medidor lido diferente do informado | sim |
+| Só a leitura confere | leitura igual à informada, número do medidor não lido; o analista confere o número | sim |
 | Lido | sem leitura informada; o valor lido volta ao analista | sim |
 | Revisão manual | confiança abaixo de 0,90 | sim |
 | Ilegível | número ou leitura não legíveis | sim |

@@ -42,7 +42,7 @@ Documentos que exigem nome completo usam o nome completo. Nos demais, usar a for
 | SR1 | 03/10/2026 (realizado) |
 | SR2 (entrega final) | 05/12/2026 |
 
-Atendimentos do Grupo 4 (sábados, fonte: PDF de atendimentos na pasta Utilitários do Drive): 17/10 10:30 a 11:15; 24/10 9:45 a 10:30; 07/11 9:00 a 9:45; 14/11 12:15 a 13:00; 21/11 11:30 a 12:15; 28/11 10:30 a 11:15. SR2 em 05/12 com chegada às 9:00 e ordem por sorteio. Lista completa em [fontes/notion.md](fontes/notion.md).
+Atendimentos do Grupo 4 (sábados, fonte: PDF de atendimentos na pasta Utilitários do Drive): 17/10 10:30 a 11:15; 24/10 9:45 a 10:30; 07/11 9:00 a 9:45; 14/11 12:15 a 13:00 (cancelado: sem aula por causa do REC'n'Play, aviso no Classroom de 07/11); 21/11 11:30 a 12:15; 28/11 10:30 a 11:15. SR2 em 05/12 com chegada às 9:00 e ordem por sorteio. Lista completa em [fontes/notion.md](fontes/notion.md).
 
 Cronograma completo: `Cronograma_CRISP_DM_Projeto_4.pdf` na pasta do Drive. É o cronograma oficial. As datas de entregáveis da Definição da Solução (05/09, 26/09, 24/10, 14/11, 21/11, 28/11) pertenciam ao desenho antigo e não valem mais.
 

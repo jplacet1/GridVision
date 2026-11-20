@@ -4,53 +4,36 @@
 
 O **GridVision** é um projeto de visão computacional desenvolvido como parte da disciplina de Projeto 4 (Dados) da CESAR School, em parceria com a Neoenergia Pernambuco.
 
-O objetivo do projeto é automatizar a análise de fotos associadas ao processo de leitura de medidores de energia, reduzindo a necessidade de inspeção manual de grandes volumes de imagens.
+O objetivo é diminuir o trabalho manual dos analistas que conferem as leituras de medidores de energia a partir das fotos de campo.
 
-## Objetivo
+## O que o sistema faz
 
-O sistema deverá receber lotes contendo registros de leitura e imagens dos medidores, realizar diferentes verificações sobre essas imagens e gerar um resultado para cada registro, indicando se ele deve ser:
+Para cada foto do lote, o sistema lê o **número do medidor** e a **leitura do visor** e compara com o que o leiturista informou:
 
-- **Aprovado**
-- **Reprovado**
-- **Revisado manualmente**
+- **Confere:** leitura e número batem com o informado, com confiança alta. Sai sem analista.
+- **Ilegível com certeza alta** ou **sem medidor:** sai da fila (pedir nova foto).
+- **Todo o resto** (diverge, confiança baixa, ilegível, sem leitura informada) vai ao analista, com o motivo e o valor lido preenchido.
 
-Sempre que possível, o sistema também deverá informar o motivo da decisão.
+O erro tolerado nas leituras resolvidas sozinhas é zero: na dúvida, a foto vai ao analista.
 
-## Abordagem
+## Como funciona
 
-A solução está sendo construída como um pipeline de processamento de imagens, combinando:
+1. **Detector** (YOLO11n treinado pelo grupo): acha medidor, visor e placa.
+2. **OCR** (PP-OCRv6 e PP-OCRv5 em ONNX, na GPU ou na CPU): lê a foto inteira e os recortes do visor e da placa.
+3. **Fiscal:** a leitura só vale dentro do visor; o código de função do display é separado da leitura.
+4. **Classificador de legibilidade:** estima a chance de a leitura ser legível e tira da fila as fotos sem salvação.
+5. **App desktop** (ttkbootstrap): processamento do lote, revisão do analista, histórico e exportação.
 
-- Processamento clássico de imagens com **OpenCV**
-- Redes neurais convolucionais (**CNNs**)
-- Transfer Learning com modelos pré-treinados
-- Classificação de imagens
-- Detecção de problemas de qualidade das fotos
-- Comparação entre o conteúdo da imagem e os dados registrados
+Detalhes, números e decisões: [docs/contexto.md](docs/contexto.md). Como rodar o app: [app/README.md](app/README.md).
 
-## Tecnologias
-
-As principais tecnologias consideradas no projeto são:
-
-- Python
-- OpenCV
-- PyTorch
-- torchvision
-- Streamlit
-- Label Studio
-- DVC
-- GitHub
-
-## Estrutura planejada
+## Estrutura
 
 ```text
 GridVision/
-├── data/
-├── notebooks/
-├── src/
-│   ├── preprocessing/
-│   ├── models/
-│   └── pipeline/
-├── app/
-├── experiments/
-├── requirements.txt
-└── README.md
+├── app/            interface desktop, pipeline do lote, processamento sem interface e testes
+├── src/gridvision/ extração (detector, OCR, fiscal, legibilidade) e aprendizado com as decisões
+├── experiments/    experimentos, cada um com script e README de resultados agregados
+└── docs/           contexto do projeto, checklist, fontes e sessões
+```
+
+As fotos e os CSVs da Neoenergia têm dados pessoais (LGPD) e nunca entram no repositório. Pesos dos modelos também ficam fora do Git.

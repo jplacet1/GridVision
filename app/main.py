@@ -273,8 +273,12 @@ class App(ttk.Window):
         self.linha.pack(fill=X)
         self.linha.bind("<Configure>", self._gradiente)
         if pl.MODELO_REAL:
-            texto_aviso, cor_aviso = ("Modelo: detector v0 + PaddleOCR 3.7 com fiscal. Cerca de 10 s por foto em CPU; "
-                                      "só \"Confere\" sai sem analista."), COR["ink-muted"]
+            if pl._modelo.motor_ocr() == "onnx":
+                motor = "OCR v6 + v5 em ONNX (" + ("GPU" if pl._modelo.usa_gpu() else "CPU, cerca de 2 s por foto") + ")"
+            else:
+                motor = f"PaddleOCR {pl._modelo.motor_ocr()} (CPU, cerca de 10 s por foto)"
+            texto_aviso, cor_aviso = (f"Modelo: detector v0 + {motor} com fiscal. "
+                                      "Só \"Confere\" sai sem analista; ilegíveis com certeza alta saem da fila."), COR["ink-muted"]
         else:
             texto_aviso, cor_aviso = (f"Extração simulada ({pl.MOTIVO_SEM_MODELO}). "
                                       "Nitidez e regra de decisão são reais."), COR["warn"]
