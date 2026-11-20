@@ -43,7 +43,7 @@ A execução foi barrada pela proteção automática do Claude Code. O `torch.hu
 
 ```
 python experiments/passes_extras/parseq_visor.py <gridvision_dados>/passes_extras/visor <gridvision_dados>/passes_extras/visor_parseq.json
-python experiments/passes_extras/passes_extras.py <export_revisao_cega.json> --parseq=<gridvision_dados>/passes_extras/visor_parseq.json
+python experiments/passes_extras/passes_extras.py <export_revisao_cega.json> --visor=<gridvision_dados>/passes_extras/visor_parseq.json
 ```
 
 Expectativa realista: pelo estudo, sem ajuste fino o PARSeq fica longe do necessário em displays degradados. O caminho que funciona é o **ajuste fino com os 500 recortes transcritos (item 12a)**: PARSeq ou o leitor CTC já existente.

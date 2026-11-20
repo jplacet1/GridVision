@@ -11,7 +11,8 @@ Variantes:
   placa_folga   recorte da placa com folga de 40% (o app usa 15%): número cortado na borda
   placa_3x      recorte da placa ampliado 3x (o app amplia 2x)
   placa_clahe   recorte da placa em cinza com CLAHE (contraste local)
-  visor_parseq  candidatos de leitura de um reconhecedor externo nos recortes do visor (JSON de parseq_visor.py)
+  visor_externo candidatos de leitura de um leitor externo nos recortes do visor (JSON de parseq_visor.py ou de
+                experiments/leitor_ctc/candidatos_visor.py)
   placa_barras  número lido do código de barras da foto (JSON de codigo_barras.py, zxing-cpp)
 
 Gabarito (só validação; teste e teste temporal ficam de fora):
@@ -20,7 +21,7 @@ Gabarito (só validação; teste e teste temporal ficam de fora):
 Erro = Confere em foto cuja leitura o gabarito diz ilegível, ou com leitura diferente da verdadeira.
 
 Uso (ambiente do app, raiz do repositório):
-    python experiments/passes_extras/passes_extras.py <export_revisao_cega.json> [--parseq=visor_parseq.json] [--barras=barras.json]
+    python experiments/passes_extras/passes_extras.py <export_revisao_cega.json> [--visor=candidatos.json] [--barras=barras.json]
     python experiments/passes_extras/passes_extras.py --recortes   # grava os recortes do visor para o parseq
 Saídas por foto ficam em gridvision_dados/passes_extras/ (fora do Git). No terminal, só contagens.
 """
@@ -71,7 +72,7 @@ def gabarito(export_json):
 _cache, _extras_ids = {}, set()
 _passes_app, _sinais_app = m._passes, m.sinais_ocr
 VARIANTES_ATIVAS = set()
-PARSEQ = {}       # nome do arquivo: [(texto, confiança)] do reconhecedor externo
+EXTERNO = {}      # nome do arquivo: [(texto, confiança)] do leitor externo do visor
 BARRAS = {}       # nome do arquivo: [códigos de barras lidos]
 _foto_atual = [""]
 
@@ -104,12 +105,12 @@ def _variante(nome, img, visor, placa):
     elif nome == "placa_clahe":
         cinza = cv2.cvtColor(_recorte(img, placa, m.FOLGA_RECORTE), cv2.COLOR_BGR2GRAY)
         r = cv2.cvtColor(cv2.createCLAHE(clipLimit=2.0, tileGridSize=(4, 4)).apply(cinza), cv2.COLOR_GRAY2BGR)
-    elif nome == "visor_parseq":
+    elif nome == "visor_externo":
         if visor is None:
             return []
         cx, cy = (visor[0] + visor[2]) / 2, (visor[1] + visor[3]) / 2
         return [("visor", [{"texto": t, "conf": c, "x": visor[0], "centro": (cx, cy)}
-                           for t, c in PARSEQ.get(_foto_atual[0], [])])]
+                           for t, c in EXTERNO.get(_foto_atual[0], [])])]
     else:
         raise ValueError(nome)
     return [("placa", _ocr_em(r))] if r.size else []
@@ -178,9 +179,9 @@ def main():
         gravar_recortes(gab)
         return
     configs = [(), ("placa_folga",), ("placa_3x",), ("placa_clahe",), ("placa_folga", "placa_3x", "placa_clahe")]
-    if "parseq" in opc:
-        PARSEQ.update({k.replace(".png", ".jpg"): v for k, v in json.load(open(opc["parseq"], encoding="utf-8")).items()})
-        configs += [("visor_parseq",)]
+    if "visor" in opc:
+        EXTERNO.update({k.replace(".png", ".jpg"): v for k, v in json.load(open(opc["visor"], encoding="utf-8")).items()})
+        configs = [(), ("visor_externo",)]
     if "barras" in opc:
         BARRAS.update(json.load(open(opc["barras"], encoding="utf-8")))
         configs += [("placa_barras",), ("placa_barras", "placa_clahe")]
